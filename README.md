@@ -16,4 +16,4 @@ Business records used during prototyping are synthetic demo data and must not be
 
 ## Current Prototype
 
-The local prototype currently includes synthetic table-tennis training business data stored in SQLite and a minimal read-only FastAPI interface.
+The local prototype currently includes synthetic table-tennis training business data, a minimal FastAPI interface, deterministic course ranking, and deterministic lead scoring.

@@ -40,7 +40,7 @@ CLASSES = [
 
 LEADS = [
     (1, "张女士", "张子轩", 9, "beginner", "weekend", "trial_completed", "2026-08-20 10:00"),
-    (2, "陈女士", "陈乐乐", 8, "foundation", "weekday evening", "trial_completed", "2026-08-18 11:00"),
+    (2, "陈女士", "陈乐乐", 8, "foundation", "weekend", "trial_completed", "2026-08-18 11:00"),
     (3, "王先生", "王可", 7, "beginner", "weekday evening", "new", "2026-09-01 09:30"),
     (4, "刘女士", "刘思远", 8, "beginner", "weekend", "consulting", "2026-07-15 14:00"),
     (5, "赵先生", "赵子涵", 11, "intermediate", "weekend", "trial_booked", "2026-08-29 16:00"),
@@ -167,6 +167,7 @@ def main():
     with get_connection() as conn:
         conn.executescript(SCHEMA)
         if conn.execute("SELECT COUNT(*) FROM coaches").fetchone()[0]:
+            conn.execute("UPDATE leads SET preferred_time = 'weekend' WHERE id = 2")
             print_counts(conn)
             return
         conn.executemany("INSERT INTO coaches VALUES (?, ?, ?, ?, ?)", COACHES)
