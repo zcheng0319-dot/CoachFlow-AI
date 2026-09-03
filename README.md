@@ -13,3 +13,7 @@ Local-first development. Core business logic will be implemented and validated l
 ## Data
 
 Business records used during prototyping are synthetic demo data and must not be presented as real customer data.
+
+## Current Prototype
+
+The local prototype currently includes synthetic table-tennis training business data stored in SQLite and a minimal read-only FastAPI interface.
