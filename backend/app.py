@@ -14,11 +14,18 @@ app = FastAPI(
     version="0.1.0",
 )
 
+LEVEL_MAP = {
+    "初学者": "beginner",
+    "有基础": "foundation",
+    "体校水平": "intermediate",
+    "省队水平": "advanced",
+}
+
 
 class RecommendationRequest(BaseModel):
     age: int = Field(ge=1, description="孩子年龄，单位为岁。")
-    level: Literal["beginner", "foundation", "intermediate", "advanced"] = Field(
-        description="孩子当前乒乓球水平。beginner=零基础或入门，foundation=基础，intermediate=进阶，advanced=竞赛或高阶。"
+    level: Literal["初学者", "有基础", "体校水平", "省队水平"] = Field(
+        description="孩子当前的乒乓球水平，可选：初学者、有基础、体校水平、省队水平。"
     )
     preferred_days: list[str] = Field(min_length=1, description="家长可接受的上课星期，例如 [\"周六\", \"周日\"]。")
     max_price: int | None = Field(
@@ -209,7 +216,7 @@ def course_recommendation(request: RecommendationRequest):
             WHERE courses.age_min <= ? AND courses.age_max >= ? AND classes.enrolled < classes.capacity
         """, (request.age, request.age)).fetchall()
     return {"recommendations": recommend_courses(
-        [dict(row) for row in candidates], request.level, request.preferred_days, request.max_price
+        [dict(row) for row in candidates], LEVEL_MAP[request.level], request.preferred_days, request.max_price
     )}
 
 
