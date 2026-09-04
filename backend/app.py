@@ -38,6 +38,82 @@ class LeadScoreRequest(BaseModel):
     )
 
 
+class LeadResponse(BaseModel):
+    id: int
+    parent_name: str
+    child_name: str
+    child_age: int
+    level: str
+    preferred_time: str | None
+    status: str
+    created_at: str
+
+
+class TrialResponse(BaseModel):
+    id: int
+    lead_id: int
+    class_id: int
+    trial_time: str
+    status: str
+    rating: float | None
+    note: str | None
+
+
+class InteractionResponse(BaseModel):
+    id: int
+    lead_id: int
+    channel: str
+    content: str
+    created_at: str
+
+
+class LeadDetailResponse(BaseModel):
+    lead: LeadResponse
+    trials: list[TrialResponse]
+    interactions: list[InteractionResponse]
+
+
+class RecommendationBreakdown(BaseModel):
+    age: int
+    level: int
+    schedule: int
+    price: int
+    availability: int
+
+
+class RecommendationItem(BaseModel):
+    class_id: int
+    course_id: int
+    course_name: str
+    coach_id: int
+    coach_name: str
+    weekday: str
+    start_time: str
+    price: int
+    remaining: int
+    score: int
+    score_breakdown: RecommendationBreakdown
+
+
+class RecommendationResponse(BaseModel):
+    recommendations: list[RecommendationItem]
+
+
+class LeadScoreBreakdown(BaseModel):
+    trial_rating: int
+    recency: int
+    interaction_frequency: int
+    course_fit: int
+    purchase_intent: int
+
+
+class LeadScoreResponse(BaseModel):
+    lead_id: int
+    score: int
+    level: Literal["high", "medium", "low"]
+    breakdown: LeadScoreBreakdown
+
+
 def get_rows(query):
     with get_connection() as conn:
         return [dict(row) for row in conn.execute(query).fetchall()]
@@ -83,6 +159,7 @@ def classes():
     summary="获取招生线索列表",
     description="获取 CoachFlow CRM 中全部招生线索的基础信息。需要查看某位家长的试听或互动记录时，再调用 get_lead_detail。",
     tags=["Agent Tools"],
+    response_model=list[LeadResponse],
 )
 def leads():
     return get_rows("SELECT * FROM leads ORDER BY id")
@@ -94,6 +171,7 @@ def leads():
     summary="获取招生线索详情",
     description="根据 lead_id 获取指定招生线索的基础信息、试听记录和历史互动，供意向判断、课程推荐和跟进分析使用。",
     tags=["Agent Tools"],
+    response_model=LeadDetailResponse,
 )
 def lead_detail(lead_id: int = Path(description="CoachFlow CRM 中的招生线索 ID。")):
     with get_connection() as conn:
@@ -117,6 +195,7 @@ def lead_detail(lead_id: int = Path(description="CoachFlow CRM 中的招生线�
     summary="推荐合适课程班级",
     description="根据孩子年龄、乒乓球水平、可上课日期和预算，对当前可报名班级执行确定性排序，并返回最多 3 个候选。",
     tags=["Agent Tools"],
+    response_model=RecommendationResponse,
 )
 def course_recommendation(request: RecommendationRequest):
     with get_connection() as conn:
@@ -140,6 +219,7 @@ def course_recommendation(request: RecommendationRequest):
     summary="计算招生线索评分",
     description="结合数据库事实以及 AI 提取的课程匹配度和购买意向，计算 0-100 的确定性招生线索评分。",
     tags=["Agent Tools"],
+    response_model=LeadScoreResponse,
 )
 def lead_score(request: LeadScoreRequest, lead_id: int = Path(description="CoachFlow CRM 中的招生线索 ID。")):
     with get_connection() as conn:
