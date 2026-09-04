@@ -4,53 +4,66 @@ from db import DB_PATH, get_connection
 
 
 COACHES = [
-    (1, "王晨", "男", "低龄启蒙与兴趣建立", "beginner"),
-    (2, "李浩", "男", "正反手基础与动作纠正", "foundation"),
-    (3, "张琪", "女", "零基础与女生兴趣培养", "beginner"),
-    (4, "陈宇", "男", "步法与多球训练", "intermediate"),
-    (5, "刘哲", "男", "发球与接发专项", "intermediate"),
-    (6, "赵琳", "女", "6-9岁儿童启蒙", "beginner"),
-    (7, "周凯", "男", "青少年体能与步法", "advanced"),
-    (8, "孙悦", "女", "兴趣课程与初学者", "beginner"),
-    (9, "吴昊", "男", "1v1技术纠正", "all_levels"),
-    (10, "何佳", "女", "青少年比赛与战术", "advanced"),
+    (1, "王晨", "男", "低龄启蒙与兴趣建立", "初学者"), (2, "李浩", "男", "正反手基础与动作纠正", "有基础"),
+    (3, "张琪", "女", "零基础与女生兴趣培养", "初学者"), (4, "陈宇", "男", "步法与多球训练", "体校水平"),
+    (5, "刘哲", "男", "发球与接发专项", "体校水平"), (6, "赵琳", "女", "6-9 岁儿童启蒙", "初学者"),
+    (7, "周凯", "男", "青少年体能与步法", "省队水平"), (8, "孙悦", "女", "兴趣课程与初学者", "初学者"),
+    (9, "吴昊", "男", "1v1 技术纠正", "有基础"), (10, "何佳", "女", "青少年比赛与战术", "省队水平"),
 ]
 
 COURSES = [
-    (1, "少儿乒乓球启蒙班", 5, 7, "beginner", 1800, 16),
-    (2, "少儿乒乓球基础班", 7, 10, "foundation", 2600, 20),
-    (3, "少儿乒乓球进阶班", 8, 12, "intermediate", 3600, 24),
-    (4, "青少年竞赛班", 10, 15, "advanced", 5200, 24),
-    (5, "乒乓球1v1私教", 6, 15, "all_levels", 6000, 12),
-    (6, "周末兴趣班", 6, 11, "beginner", 1600, 12),
+    (1, "少儿乒乓球启蒙班", 5, 7, "初学者", 1800, 16), (2, "少儿乒乓球基础班", 7, 10, "有基础", 2600, 20),
+    (3, "少儿乒乓球进阶班", 8, 12, "体校水平", 3600, 24), (4, "青少年竞赛班", 10, 15, "省队水平", 5200, 24),
+    (5, "乒乓球1v1私教", 6, 15, "有基础", 6000, 12), (6, "周末兴趣班", 6, 11, "初学者", 1600, 12),
+    (7, "幼儿趣味启蒙班", 4, 6, "初学者", 1500, 12), (8, "周末基础强化班", 8, 12, "有基础", 3000, 20),
+    (9, "竞赛提高班", 9, 14, "体校水平", 4200, 20), (10, "寒假集训营", 7, 13, "有基础", 2400, 10),
+    (11, "暑假专项集训", 8, 14, "体校水平", 3800, 15), (12, "青少年高水平冲刺班", 11, 16, "省队水平", 6800, 24),
 ]
 
 CLASSES = [
-    (1, 1, 1, "周一", "18:30", 8, 7),
-    (2, 2, 2, "周二", "18:30", 10, 9),
-    (3, 2, 3, "周三", "18:30", 10, 5),
-    (4, 3, 4, "周四", "19:00", 8, 4),
-    (5, 4, 10, "周五", "19:00", 10, 6),
-    (6, 6, 6, "周六", "09:00", 12, 3),
-    (7, 2, 8, "周六", "14:00", 10, 8),
-    (8, 3, 5, "周六", "16:00", 8, 5),
-    (9, 1, 1, "周日", "09:00", 8, 6),
-    (10, 4, 7, "周日", "15:00", 10, 4),
+    (1, 1, 1, "周一", "18:30", 8, 7), (2, 2, 2, "周二", "18:30", 10, 9), (3, 2, 3, "周三", "18:30", 10, 5),
+    (4, 3, 4, "周四", "19:00", 8, 4), (5, 4, 10, "周五", "19:00", 10, 6), (6, 6, 6, "周六", "09:00", 12, 3),
+    (7, 2, 8, "周六", "14:00", 10, 8), (8, 3, 5, "周六", "16:00", 8, 5), (9, 1, 1, "周日", "09:00", 8, 6),
+    (10, 4, 7, "周日", "15:00", 10, 4), (11, 7, 3, "周日", "10:00", 8, 3), (12, 8, 2, "周日", "14:00", 10, 7),
+    (13, 9, 4, "周六", "18:00", 8, 6), (14, 10, 2, "周一", "09:30", 12, 10), (15, 10, 2, "周六", "10:30", 12, 4),
+    (16, 11, 5, "周二", "14:00", 12, 9), (17, 11, 5, "周日", "16:00", 12, 8), (18, 12, 7, "周六", "13:00", 8, 6),
+    (19, 5, 9, "周日", "17:00", 6, 4), (20, 6, 6, "周日", "11:00", 12, 12), (21, 1, 1, "周三", "17:00", 8, 2),
+    (22, 8, 2, "周二", "19:00", 10, 1), (23, 3, 4, "周五", "17:00", 8, 7), (24, 9, 10, "周日", "18:00", 8, 1),
 ]
 
 LEADS = [
-    (1, "张女士", "张子轩", 9, "beginner", "weekend", "trial_completed", "2026-08-20 10:00"),
-    (2, "陈女士", "陈乐乐", 8, "foundation", "weekend", "trial_completed", "2026-08-18 11:00"),
-    (3, "王先生", "王可", 7, "beginner", "weekday evening", "new", "2026-09-01 09:30"),
-    (4, "刘女士", "刘思远", 8, "beginner", "weekend", "consulting", "2026-07-15 14:00"),
-    (5, "赵先生", "赵子涵", 11, "intermediate", "weekend", "trial_booked", "2026-08-29 16:00"),
-    (6, "孙女士", "孙一鸣", 9, "foundation", "weekend", "enrolled", "2026-08-01 10:30"),
-    (7, "周先生", "周雨桐", 10, "beginner", "weekend", "lost", "2026-08-05 15:00"),
-    (8, "吴女士", "吴泽宇", 8, "beginner", "weekend", "lost", "2026-08-08 13:00"),
-    (9, "陈先生", "陈子墨", 12, "advanced", "weekday evening", "trial_completed", "2026-08-12 17:00"),
-    (10, "杨女士", "杨晨曦", 6, "beginner", "weekend", "trial_booked", "2026-08-30 12:00"),
-    (11, "黄先生", "黄子航", 13, "advanced", "weekend", "enrolled", "2026-08-03 16:30"),
-    (12, "何女士", "何乐", 7, "beginner", "weekend", "new", "2026-09-02 10:00"),
+    (1, "张女士", "张子轩", 9, "初学者", "weekend", "trial_completed", "2026-08-20 10:00"),
+    (2, "陈女士", "陈乐怡", 8, "有基础", "weekend", "trial_completed", "2026-08-18 11:00"),
+    (3, "王先生", "王可", 7, "初学者", "weekday evening", "new", "2026-09-01 09:30"),
+    (4, "刘女士", "刘思远", 8, "初学者", "weekend", "consulting", "2026-07-15 14:00"),
+    (5, "赵先生", "赵子涵", 11, "体校水平", "weekend", "trial_booked", "2026-08-29 16:00"),
+    (6, "孙女士", "孙一鸣", 9, "有基础", "weekend", "enrolled", "2026-08-01 10:30"),
+    (7, "周先生", "周雨桐", 10, "初学者", "weekend", "lost", "2026-08-05 15:00"),
+    (8, "吴女士", "吴宸宇", 8, "初学者", "weekend", "lost", "2026-08-08 13:00"),
+    (9, "陈先生", "陈子墨", 12, "省队水平", "weekday evening", "trial_completed", "2026-08-12 17:00"),
+    (10, "杨女士", "杨晨曦", 6, "初学者", "weekend", "trial_booked", "2026-08-30 12:00"),
+    (11, "黄先生", "黄子航", 13, "省队水平", "weekend", "enrolled", "2026-08-03 16:30"),
+    (12, "何女士", "何乐", 7, "初学者", "weekend", "new", "2026-09-02 10:00"),
+    (13, "李女士", "李沐阳", 8, "初学者", "weekend", "trial_completed", "2026-08-25 09:40"),
+    (14, "高先生", "高子谦", 10, "有基础", "weekday evening", "trial_completed", "2026-08-26 18:20"),
+    (15, "马女士", "马予安", 9, "有基础", "weekend", "trial_completed", "2026-08-27 11:30"),
+    (16, "宋先生", "宋嘉佑", 12, "体校水平", "weekend", "trial_completed", "2026-08-21 15:10"),
+    (17, "冯女士", "冯思齐", 6, "初学者", "weekend", "trial_completed", "2026-08-19 10:20"),
+    (18, "杜先生", "杜宇辰", 10, "初学者", "weekday evening", "trial_completed", "2026-08-16 16:10"),
+    (19, "许女士", "许诺", 11, "有基础", "weekend", "trial_booked", "2026-08-28 13:00"),
+    (20, "罗先生", "罗一帆", 8, "初学者", "holiday", "trial_completed", "2026-08-24 14:30"),
+    (21, "邓女士", "邓浩然", 13, "体校水平", "weekend", "trial_completed", "2026-08-17 17:00"),
+    (22, "蒋先生", "蒋安琪", 5, "初学者", "weekend", "lost", "2026-08-15 09:00"),
+    (23, "方女士", "方梓睿", 11, "体校水平", "weekend", "trial_completed", "2026-08-22 12:30"),
+    (24, "潘先生", "潘语桐", 7, "初学者", "weekday evening", "consulting", "2026-08-31 19:10"),
+    (25, "程女士", "程子恒", 9, "有基础", "weekend", "trial_completed", "2026-08-23 11:10"),
+    (26, "贺先生", "贺可心", 12, "省队水平", "weekend", "consulting", "2026-07-28 10:40"),
+    (27, "朱女士", "朱昊", 8, "初学者", "weekend", "new", "2026-09-03 10:00"),
+    (28, "郭先生", "郭欣怡", 6, "初学者", "weekend", "trial_completed", "2026-08-18 14:20"),
+    (29, "彭女士", "彭昱宁", 14, "省队水平", "weekday evening", "lost", "2026-07-20 16:40"),
+    (30, "蔡先生", "蔡博文", 10, "有基础", "weekend", "consulting", "2026-08-30 09:30"),
+    (31, "叶女士", "叶知远", 7, "初学者", "holiday", "new", "2026-09-01 15:20"),
+    (32, "唐先生", "唐语彤", 11, "体校水平", "weekend", "trial_completed", "2026-08-29 17:30"),
 ]
 
 TRIALS = [
@@ -61,117 +74,79 @@ TRIALS = [
     (5, 9, 5, "2026-08-16 19:00", "completed", 4.2, "具备竞赛基础，适合继续观察。"),
     (6, 10, 6, "2026-09-05 09:00", "booked", None, None),
     (7, 11, 10, "2026-08-10 15:00", "completed", 4.8, "比赛训练节奏合适，家长确认报名。"),
+    (8, 13, 6, "2026-08-30 09:00", "completed", 4.6, "孩子喜欢课堂互动，家长认可启蒙方式。"),
+    (9, 14, 12, "2026-08-31 14:00", "completed", 4.5, "动作基础较好，但工作日晚间接送存在冲突。"),
+    (10, 15, 8, "2026-08-30 14:00", "completed", 4.1, "孩子能跟上训练，家长仍在比较附近机构。"),
+    (11, 16, 18, "2026-08-29 13:00", "completed", 4.7, "具备体校训练基础，需要加强接发球。"),
+    (12, 17, 9, "2026-08-26 09:00", "completed", 3.5, "孩子能完成练习，但主动参与度一般。"),
+    (13, 18, 4, "2026-08-25 19:00", "completed", 3.6, "教练建议先从基础班开始，不建议直接进阶。"),
+    (14, 19, 12, "2026-09-01 14:00", "cancelled", None, "家长临时出差取消，尚未重新约课。"),
+    (15, 20, 15, "2026-08-31 10:30", "completed", 4.4, "寒假集训节奏合适，家长希望确认假期安排。"),
+    (16, 21, 5, "2026-08-23 15:00", "completed", 3.8, "比赛意愿明确，但当前课程难度偏高。"),
+    (17, 22, 11, "2026-08-24 10:00", "cancelled", None, "孩子当日发热未到店，家长暂未回复改约时间。"),
+    (18, 23, 13, "2026-08-30 18:00", "completed", 4.9, "孩子比赛意识强，教练建议竞赛提高班。"),
+    (19, 25, 19, "2026-08-30 17:00", "completed", 4.3, "私教针对性强，但家长需要协调周日时间。"),
+    (20, 28, 9, "2026-08-29 09:00", "completed", 4.0, "兴趣正常，家长希望先观察孩子能否坚持。"),
+    (21, 32, 24, "2026-08-31 18:00", "completed", 4.6, "步法基础较好，适合竞赛提高班继续训练。"),
 ]
 
 INTERACTIONS = [
-    (1, 1, "wechat", "9岁以前没学过，可以上吗？", "2026-08-20 10:05"),
-    (2, 1, "wechat", "我们周六下午比较方便。", "2026-08-21 09:20"),
-    (3, 1, "phone", "试听感觉不错，孩子愿意继续学。", "2026-08-23 16:10"),
-    (4, 1, "wechat", "课程挺合适，就是价格有点超预算。", "2026-08-23 18:30"),
-    (5, 2, "wechat", "孩子很喜欢教练，想报名。", "2026-08-22 20:00"),
-    (6, 2, "phone", "周二晚上的班和学校课程冲突。", "2026-08-23 09:30"),
-    (7, 2, "wechat", "周末还有同级别的班吗？", "2026-08-23 10:00"),
-    (8, 2, "wechat", "时间合适的话我们就报名。", "2026-08-23 10:10"),
-    (9, 3, "wechat", "孩子7岁，想了解工作日晚上的启蒙课。", "2026-09-01 09:35"),
-    (10, 3, "phone", "先帮我留意一下合适的时间。", "2026-09-01 11:00"),
-    (11, 4, "wechat", "先了解一下8岁零基础有哪些课程。", "2026-07-15 14:10"),
-    (12, 4, "wechat", "我再和家里商量一下。", "2026-07-16 10:00"),
-    (13, 5, "wechat", "孩子有一点基础，周末下午可以试听吗？", "2026-08-29 16:10"),
-    (14, 5, "phone", "好的，先预约周六16点试听。", "2026-08-30 10:30"),
-    (15, 6, "wechat", "试听后孩子很喜欢基础班的氛围。", "2026-08-09 16:00"),
-    (16, 6, "phone", "我们确认报名周六下午的课程。", "2026-08-10 09:00"),
-    (17, 6, "wechat", "学费已了解，后续请安排开课提醒。", "2026-08-10 09:20"),
-    (18, 7, "wechat", "课程内容合适，但2600元超出我们的预算。", "2026-08-06 10:00"),
-    (19, 7, "phone", "这次先不报了，谢谢。", "2026-08-07 15:30"),
-    (20, 7, "wechat", "如果有更优惠的课程再联系我。", "2026-08-08 09:00"),
-    (21, 8, "wechat", "门店离家太远，接送确实不方便。", "2026-08-09 13:30"),
-    (22, 8, "phone", "我们先不安排试听了。", "2026-08-09 17:00"),
-    (23, 9, "wechat", "孩子参加过校队，想了解竞赛班训练。", "2026-08-12 17:10"),
-    (24, 9, "phone", "试听节奏可以，我们再考虑一下。", "2026-08-16 20:00"),
-    (25, 10, "wechat", "6岁刚开始接触乒乓球，周六上午方便。", "2026-08-30 12:10"),
-    (26, 10, "phone", "请帮忙预约下周六的试听。", "2026-08-31 10:00"),
-    (27, 11, "wechat", "孩子想提高比赛战术，周日下午方便。", "2026-08-03 16:40"),
-    (28, 11, "phone", "试听满意，确认报名竞赛班。", "2026-08-10 17:00"),
-    (29, 11, "wechat", "请把上课准备事项发给我。", "2026-08-11 09:00"),
-    (30, 12, "wechat", "孩子7岁，周日上午的启蒙班还有位置吗？", "2026-09-02 10:10"),
+    (1, "wechat", "9岁以前没学过，可以上吗？", "2026-08-20 10:05"), (1, "wechat", "我们周六下午比较方便。", "2026-08-21 09:20"), (1, "phone", "试听感觉不错，孩子愿意继续学。", "2026-08-23 16:10"), (1, "wechat", "课程挺合适，就是价格有点超预算，预算最多2000左右。", "2026-08-23 18:30"),
+    (2, "wechat", "孩子很喜欢教练，想报名。", "2026-08-22 20:00"), (2, "phone", "周二晚上的班和学校课程冲突。", "2026-08-23 09:30"), (2, "wechat", "周末还有同级别的班吗？", "2026-08-23 10:00"), (2, "wechat", "时间合适的话我们就报名。", "2026-08-23 10:10"),
+    (3, "wechat", "孩子7岁，想了解工作日晚上启蒙课。", "2026-09-01 09:35"), (3, "phone", "先帮我留意一个合适的时间。", "2026-09-01 11:00"),
+    (4, "wechat", "先了解一下8岁零基础有哪些课程。", "2026-07-15 14:10"), (4, "wechat", "我再和家里商量一下。", "2026-07-16 10:00"),
+    (5, "wechat", "孩子有一点基础，周末下午可以试听吗？", "2026-08-29 16:10"), (5, "phone", "好的，先预约周六16点试听。", "2026-08-30 10:30"),
+    (6, "wechat", "试听后孩子很喜欢基础班的氛围。", "2026-08-09 16:00"), (6, "phone", "我们确认报名周六下午的课程。", "2026-08-10 09:00"), (6, "wechat", "学费已了解，后续请安排开课提醒。", "2026-08-10 09:20"),
+    (7, "wechat", "课程内容合适，但1600元超出我们的预算。", "2026-08-06 10:00"), (7, "phone", "这次先不报了，谢谢。", "2026-08-07 15:30"), (7, "wechat", "如果有更合适的课程再联系我。", "2026-08-08 09:00"),
+    (8, "wechat", "门店离家太远，接送确实不方便。", "2026-08-09 13:30"), (8, "phone", "我们先不安排试听了。", "2026-08-09 17:00"),
+    (9, "wechat", "孩子参加过校队，想了解竞赛班训练。", "2026-08-12 17:10"), (9, "phone", "试听节奏可以，我们再考虑一下。", "2026-08-16 20:00"),
+    (10, "wechat", "6岁刚开始接触乒乓球，周六上午方便。", "2026-08-30 12:10"), (10, "phone", "请帮忙预约下周六的试听。", "2026-08-31 10:00"),
+    (11, "wechat", "孩子想提高比赛战术，周日下午方便。", "2026-08-03 16:40"), (11, "phone", "试听满意，确认报名竞赛班。", "2026-08-10 17:00"), (11, "wechat", "请把上课准备事项发给我。", "2026-08-11 09:00"),
+    (12, "wechat", "孩子7岁，周日上午的启蒙班还有位置吗？", "2026-09-02 10:10"),
+    (13, "wechat", "想培养孩子兴趣，之前没有系统学过。", "2026-08-25 09:45"), (13, "in_store", "试听时孩子愿意主动和教练互动。", "2026-08-30 10:20"), (13, "wechat", "孩子挺喜欢，但我们还想确认周日能不能上。", "2026-08-30 18:10"), (13, "phone", "价格可以接受，等家长确认接送安排。", "2026-08-31 11:20"),
+    (14, "wechat", "孩子学过一年兴趣班，想提高正反手。", "2026-08-26 18:30"), (14, "in_store", "试听后教练认为适合基础强化班。", "2026-08-31 15:20"), (14, "wechat", "周二晚上长期有英语课，周末时间再看看。", "2026-08-31 19:00"),
+    (15, "wechat", "正在比较附近另一家机构的周末基础班。", "2026-08-27 11:45"), (15, "in_store", "孩子能跟上多球训练，但家长重点比较价格。", "2026-08-30 15:10"), (15, "phone", "对方还没有最终回复，先不催报名。", "2026-09-01 10:30"),
+    (16, "wechat", "孩子有体校训练背景，想强化接发球。", "2026-08-21 15:20"), (16, "in_store", "教练建议竞赛提高班和专项训练结合。", "2026-08-29 14:10"), (16, "phone", "家长想先确认周末竞赛班的固定时间。", "2026-08-30 09:50"),
+    (17, "wechat", "孩子6岁，家长想培养兴趣，不想压力太大。", "2026-08-19 10:30"), (17, "in_store", "孩子愿意练习，但需要更多游戏化引导。", "2026-08-26 10:10"), (17, "wechat", "家长说回去再问孩子是否愿意长期坚持。", "2026-08-27 09:30"),
+    (18, "wechat", "孩子以前只在学校社团打过，想直接上进阶班。", "2026-08-16 16:20"), (18, "in_store", "教练说明当前动作基础不足，建议先上基础班。", "2026-08-25 20:00"), (18, "wechat", "家长要求进度快，暂时还在考虑。", "2026-08-26 11:00"),
+    (19, "wechat", "想约周日下午基础强化班试听。", "2026-08-28 13:20"), (19, "phone", "家长临时出差，取消本周试听。", "2026-09-01 09:00"), (19, "wechat", "已读未回复。", "2026-09-03 16:00"),
+    (20, "wechat", "寒假想集中练一段时间，平时不固定。", "2026-08-24 14:40"), (20, "in_store", "孩子对集训节奏适应不错。", "2026-08-31 12:00"), (20, "phone", "家长要等学校寒假安排确定后再决定。", "2026-09-01 17:00"),
+    (21, "wechat", "孩子想进校队，最近学校有比赛。", "2026-08-17 17:10"), (21, "in_store", "教练认为现阶段竞赛班难度偏高。", "2026-08-23 16:00"), (21, "wechat", "家长希望能快速提高，仍在对比方案。", "2026-08-24 10:30"),
+    (22, "wechat", "5岁零基础，想先体验趣味启蒙。", "2026-08-15 09:10"), (22, "phone", "孩子发热没到店，之后再联系。", "2026-08-24 11:30"), (22, "wechat", "已读未回复。", "2026-08-30 15:00"),
+    (23, "wechat", "孩子参加区级比赛，想加强步法和发球。", "2026-08-22 12:40"), (23, "in_store", "试听时对抗意识较强，适合竞赛提高班。", "2026-08-30 19:10"), (23, "phone", "家长关心周日18点是否能长期固定。", "2026-08-31 20:00"), (23, "wechat", "价格和时间都可以，等孩子学校安排确认。", "2026-09-02 10:00"),
+    (24, "wechat", "刚加微信，咨询周三傍晚启蒙班。", "2026-08-31 19:20"), (24, "wechat", "已发送课程介绍，等待家长回复。", "2026-09-02 14:00"),
+    (25, "wechat", "孩子有一年兴趣班经验，想提高技术细节。", "2026-08-23 11:20"), (25, "in_store", "私教评估显示反手稳定性需要加强。", "2026-08-30 17:50"), (25, "phone", "周日傍晚接送有冲突，想看看其他时段。", "2026-08-31 18:20"),
+    (26, "wechat", "孩子目标是参加比赛，家长对成绩要求很高。", "2026-07-28 10:50"), (26, "phone", "已介绍高水平冲刺班，家长暂未决定。", "2026-07-30 11:00"), (26, "wechat", "超过一个月未回复。", "2026-08-31 09:00"),
+    (27, "wechat", "8岁零基础，先想知道价格和上课时间。", "2026-09-03 10:10"),
+    (28, "wechat", "孩子喜欢运动，想尝试周日启蒙班。", "2026-08-18 14:30"), (28, "in_store", "试听表现正常，孩子需要家长陪伴鼓励。", "2026-08-29 09:50"), (28, "wechat", "家长想先观察两周，再决定是否报名。", "2026-08-30 17:30"),
+    (29, "wechat", "孩子已有比赛经历，比较其他机构的专项课。", "2026-07-20 16:50"), (29, "phone", "家长明确表示暂不考虑报名。", "2026-07-22 10:00"),
+    (30, "wechat", "10岁有基础，周末希望系统提升。", "2026-08-30 09:40"), (30, "phone", "家长重点问价格，暂未提出试听。", "2026-08-30 15:00"), (30, "wechat", "已发送基础强化班和进阶班信息。", "2026-09-01 09:20"),
+    (31, "wechat", "暑假想报短期课，孩子目前零基础。", "2026-09-01 15:30"), (31, "wechat", "已说明当前可咨询寒假集训安排，等待回复。", "2026-09-02 11:30"),
+    (32, "wechat", "孩子在体校练过，周末想继续参加比赛训练。", "2026-08-29 17:40"), (32, "in_store", "试听后教练认可步法基础，建议竞赛提高班。", "2026-08-31 19:00"), (32, "phone", "家长希望先了解后续比赛训练节奏。", "2026-09-01 18:30"),
 ]
 
 FOLLOWUPS = [
-    (1, 2, "试听满意但时间冲突，需要确认周末替代班。", "2026-09-04", "pending", "2026-09-03 10:00"),
-    (2, 5, "已预约试听，需要在试听前确认到店安排。", "2026-09-05", "pending", "2026-09-03 11:00"),
+    (1, 2, "确认周末同级别班次与家长接送安排", "2026-09-05", "pending", "2026-09-03 10:00"),
+    (2, 5, "试听前确认周六16点到店安排", "2026-09-05", "pending", "2026-09-03 11:00"),
+    (3, 13, "确认周日启蒙班接送安排后跟进报名意向", "2026-09-05", "pending", "2026-09-03 13:00"),
+    (4, 14, "提供可替代的周末基础强化班时间", "2026-09-06", "pending", "2026-09-03 14:00"),
+    (5, 16, "确认竞赛提高班周末固定时间", "2026-09-06", "pending", "2026-09-03 15:00"),
+    (6, 23, "确认学校安排后跟进竞赛提高班报名", "2026-09-06", "pending", "2026-09-03 16:00"),
 ]
 
 SCHEMA = """
-CREATE TABLE IF NOT EXISTS coaches (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    gender TEXT NOT NULL,
-    specialty TEXT NOT NULL,
-    level TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS courses (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    age_min INTEGER NOT NULL,
-    age_max INTEGER NOT NULL,
-    level TEXT NOT NULL,
-    price INTEGER NOT NULL,
-    lessons INTEGER NOT NULL
-);
-CREATE TABLE IF NOT EXISTS classes (
-    id INTEGER PRIMARY KEY,
-    course_id INTEGER NOT NULL,
-    coach_id INTEGER NOT NULL,
-    weekday TEXT NOT NULL,
-    start_time TEXT NOT NULL,
-    capacity INTEGER NOT NULL,
-    enrolled INTEGER NOT NULL CHECK (enrolled >= 0 AND enrolled <= capacity),
-    FOREIGN KEY (course_id) REFERENCES courses(id),
-    FOREIGN KEY (coach_id) REFERENCES coaches(id)
-);
-CREATE TABLE IF NOT EXISTS leads (
-    id INTEGER PRIMARY KEY,
-    parent_name TEXT NOT NULL,
-    child_name TEXT NOT NULL,
-    child_age INTEGER NOT NULL,
-    level TEXT NOT NULL,
-    preferred_time TEXT,
-    status TEXT NOT NULL CHECK (status IN ('new', 'consulting', 'trial_booked', 'trial_completed', 'enrolled', 'lost')),
-    created_at TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS trials (
-    id INTEGER PRIMARY KEY,
-    lead_id INTEGER NOT NULL,
-    class_id INTEGER NOT NULL,
-    trial_time TEXT NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('booked', 'completed', 'cancelled')),
-    rating REAL CHECK (rating IS NULL OR rating BETWEEN 1.0 AND 5.0),
-    note TEXT,
-    FOREIGN KEY (lead_id) REFERENCES leads(id),
-    FOREIGN KEY (class_id) REFERENCES classes(id)
-);
-CREATE TABLE IF NOT EXISTS interactions (
-    id INTEGER PRIMARY KEY,
-    lead_id INTEGER NOT NULL,
-    channel TEXT NOT NULL CHECK (channel IN ('wechat', 'phone', 'in_store')),
-    content TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    FOREIGN KEY (lead_id) REFERENCES leads(id)
-);
-CREATE TABLE IF NOT EXISTS followups (
-    id INTEGER PRIMARY KEY,
-    lead_id INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    due_date TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status = 'pending'),
-    created_at TEXT NOT NULL,
-    FOREIGN KEY (lead_id) REFERENCES leads(id)
-);
+CREATE TABLE IF NOT EXISTS coaches (id INTEGER PRIMARY KEY, name TEXT NOT NULL, gender TEXT NOT NULL, specialty TEXT NOT NULL, level TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS courses (id INTEGER PRIMARY KEY, name TEXT NOT NULL, age_min INTEGER NOT NULL, age_max INTEGER NOT NULL, level TEXT NOT NULL, price INTEGER NOT NULL, lessons INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS classes (id INTEGER PRIMARY KEY, course_id INTEGER NOT NULL, coach_id INTEGER NOT NULL, weekday TEXT NOT NULL, start_time TEXT NOT NULL, capacity INTEGER NOT NULL, enrolled INTEGER NOT NULL CHECK (enrolled >= 0 AND enrolled <= capacity), FOREIGN KEY (course_id) REFERENCES courses(id), FOREIGN KEY (coach_id) REFERENCES coaches(id));
+CREATE TABLE IF NOT EXISTS leads (id INTEGER PRIMARY KEY, parent_name TEXT NOT NULL, child_name TEXT NOT NULL, child_age INTEGER NOT NULL, level TEXT NOT NULL, preferred_time TEXT, status TEXT NOT NULL CHECK (status IN ('new', 'consulting', 'trial_booked', 'trial_completed', 'enrolled', 'lost')), created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS trials (id INTEGER PRIMARY KEY, lead_id INTEGER NOT NULL, class_id INTEGER NOT NULL, trial_time TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('booked', 'completed', 'cancelled')), rating REAL CHECK (rating IS NULL OR rating BETWEEN 1.0 AND 5.0), note TEXT, FOREIGN KEY (lead_id) REFERENCES leads(id), FOREIGN KEY (class_id) REFERENCES classes(id));
+CREATE TABLE IF NOT EXISTS interactions (id INTEGER PRIMARY KEY, lead_id INTEGER NOT NULL, channel TEXT NOT NULL CHECK (channel IN ('wechat', 'phone', 'in_store')), content TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY (lead_id) REFERENCES leads(id));
+CREATE TABLE IF NOT EXISTS followups (id INTEGER PRIMARY KEY, lead_id INTEGER NOT NULL, content TEXT NOT NULL, due_date TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending' CHECK (status = 'pending'), created_at TEXT NOT NULL, FOREIGN KEY (lead_id) REFERENCES leads(id));
 """
 
 
 def print_counts(conn):
-    print("CoachFlow database ready.")
+    print("CoachFlow demo database ready.")
     for table in ("coaches", "courses", "classes", "leads", "trials", "interactions", "followups"):
         print(f"{table}: {conn.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0]}")
 
@@ -180,18 +155,14 @@ def main():
     Path(DB_PATH).parent.mkdir(exist_ok=True)
     with get_connection() as conn:
         conn.executescript(SCHEMA)
-        if conn.execute("SELECT COUNT(*) FROM coaches").fetchone()[0]:
-            conn.execute("UPDATE leads SET preferred_time = 'weekend' WHERE id = 2")
-            if not conn.execute("SELECT COUNT(*) FROM followups").fetchone()[0]:
-                conn.executemany("INSERT INTO followups VALUES (?, ?, ?, ?, ?, ?)", FOLLOWUPS)
-            print_counts(conn)
-            return
+        for table in ("followups", "interactions", "trials", "leads", "classes", "courses", "coaches"):
+            conn.execute(f"DELETE FROM {table}")
         conn.executemany("INSERT INTO coaches VALUES (?, ?, ?, ?, ?)", COACHES)
         conn.executemany("INSERT INTO courses VALUES (?, ?, ?, ?, ?, ?, ?)", COURSES)
         conn.executemany("INSERT INTO classes VALUES (?, ?, ?, ?, ?, ?, ?)", CLASSES)
         conn.executemany("INSERT INTO leads VALUES (?, ?, ?, ?, ?, ?, ?, ?)", LEADS)
         conn.executemany("INSERT INTO trials VALUES (?, ?, ?, ?, ?, ?, ?)", TRIALS)
-        conn.executemany("INSERT INTO interactions VALUES (?, ?, ?, ?, ?)", INTERACTIONS)
+        conn.executemany("INSERT INTO interactions (lead_id, channel, content, created_at) VALUES (?, ?, ?, ?)", INTERACTIONS)
         conn.executemany("INSERT INTO followups VALUES (?, ?, ?, ?, ?, ?)", FOLLOWUPS)
         print_counts(conn)
 

@@ -21,6 +21,13 @@ LEVEL_MAP = {
     "省队水平": "advanced",
 }
 
+LEVEL_MAP.update({
+    "初学者": "初学者",
+    "有基础": "有基础",
+    "体校水平": "体校水平",
+    "省队水平": "省队水平",
+})
+
 
 class RecommendationRequest(BaseModel):
     age: int = Field(ge=1, description="孩子年龄，单位为岁。")
