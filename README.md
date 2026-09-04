@@ -30,7 +30,7 @@ flowchart LR
     F --> D
 ```
 
-当前仓库实现了 FastAPI + SQLite 的业务 Tool、确定性课程推荐与线索评分、课程动态信息查询，以及 CRM 的 Lead / Interaction 写入保护。`coze/multi_agent_spec.md` 记录主控与三个专项 Agent 的职责划分；实际 Coze 工作流绑定应在部署环境中单独核验。
+当前仓库实现了 FastAPI + SQLite 的业务 Tool、确定性课程推荐与线索评分、课程动态信息查询，以及 CRM 的 Lead / Interaction 写入保护。`coze/multi_agent_spec.md` 记录主控与三个专项 Agent 的职责划分；六条核心流程已在 Coze Preview / Debug 中人工完成 E2E 验证，但尚未 production 化或自动化回归。
 
 ### 核心能力
 
@@ -49,7 +49,7 @@ Agent 负责理解请求、路由和组织步骤；确定性 Tool 负责读写�
 
 ### RAG 与动态业务事实分离
 
-RAG 适合课程选择原则、试听 FAQ、训练知识等相对稳定的知识；当前价格、班级、名额、教练、客户互动与试听历史必须通过结构化 Tool 获取。动态事实不由 LLM 从记忆中补全。
+Volcano Engine Knowledge Base / RAG 用于水平判断、训练原则、试听 FAQ 和稳定业务知识；当前价格、班级、名额、教练、客户互动与试听历史必须通过结构化 Tool 获取。动态事实不由 LLM 从记忆中补全。
 
 ### LLM 不直接拥有业务真相
 
@@ -61,7 +61,7 @@ LLM 用于理解、归纳和建议；FastAPI + SQLite 是查询、参数校验�
 
 ### CRM 写回不是静态 Seed
 
-后端已提供 `upsert_lead` 与 `record_interaction`。当前 Coze spec 尚未把“何时自动调用写接口”定义为上线策略；这是待验证的工作流决策，不是已完成的自动化承诺。
+后端已提供 `upsert_lead` 与 `record_interaction`，并已在 Coze Preview / Debug 中人工验证新建客户、已有客户写回和新客户首次咨询写回。写入触发策略尚未 production 化，也没有自动化回归承诺。
 
 ### 控制 CRM 数据污染
 
@@ -80,17 +80,22 @@ LLM 用于理解、归纳和建议；FastAPI + SQLite 是查询、参数校验�
 | `score_lead` | 用确定性规则计算线索优先级 | 读取 / 计算 |
 | `create_followup` | 创建待办跟进任务 | 写入，需 HITL |
 
-## Demo Scenarios
+## Verified Demo Flows
 
-1. **新客户进入 CRM**：调用 `upsert_lead` 创建信息充分的新线索，再用 `record_interaction` 保存首次咨询事实。
-2. **动态课程查询**：询问“周末兴趣班还有几个名额？”时调用 `get_course_info`，而不是向知识库猜测。
-3. **试听满意但价格阻塞**：读取张女士的试听与互动历史，调用 `score_lead` 生成有依据的优先级判断。
-4. **最新反馈写回**：低信息、重复和近重复内容不会污染 CRM。
-5. **跟进任务需确认**：系统可准备任务，但只有确认后的工作流才能调用 `create_followup`。
+| Flow | Verified path | Status |
+| --- | --- | --- |
+| Named course query | Course Agent → `get_course_info` | ✅ Coze Preview |
+| Lead analysis | CRM → `score_lead` → analysis | ✅ Coze Preview |
+| Existing lead writeback | identity → `record_interaction` | ✅ Coze Preview |
+| New lead creation | `upsert_lead` | ✅ Coze Preview |
+| New lead + first consultation | `upsert_lead` → `record_interaction` | ✅ Coze Preview |
+| HITL follow-up | confirm → `create_followup` | ✅ Coze Preview |
+
+以上为 synthetic demo data 下在 Coze Preview / Debug 完成人工 E2E 验证的流程，不代表 production SLA 或真实客户效果。
 
 ## Evaluation 与质量门槛
 
-仓库包含两个 Golden Case 工作簿：12 条核心用例与 36 条补充用例，覆盖路由、Tool 调用、实体识别、RAG、澄清、线索分析和 HITL 安全。当前不宣称正式 Coze evaluator 分数，也不把最终回答当作唯一证据。
+仓库包含两个 Golden Case 工作簿：12 条核心用例与 36 条补充用例，覆盖路由、Tool 调用、实体识别、RAG、澄清、线索分析和 HITL 安全。开发中已在 Coze Preview / Debug 人工观察核心 E2E Flow；当前不宣称正式 Coze evaluator 分数或自动化 trace evaluation。
 
 当前质量门槛关注路由正确性、Tool 调用正确性、CRM grounding、动态事实幻觉、HITL 合规、重复写入率与任务完成延迟。开发阶段应结合 Golden Case、可见执行轨迹和最终回答共同判断。
 
@@ -105,13 +110,13 @@ V1 不构建完整 CRM 前端、支付、真实微信接入、自动报名/退�
 
 ## Prototype → Production Evolution
 
-当前原型：Coze 设计规格 + FastAPI + SQLite + synthetic demo data。生产化需要托管数据库、认证与 RBAC、租户隔离、可观测性与 tracing、CRM/教务系统集成、持久部署，以及线上评测监控。
+当前原型：Coze Preview / Debug 人工 E2E 验证 + Volcano Engine Knowledge Base / RAG + FastAPI + SQLite + synthetic demo data。生产化需要托管数据库、认证与 RBAC、租户隔离、真实消息集成、可观测性与 tracing、CRM/教务系统集成、持久部署，以及线上评测监控。
 
 ## 技术栈
 
 - Python、FastAPI、SQLite
-- Coze 多 Agent 设计规格
-- 本地中文业务知识源（为 RAG 准备）
+- Coze Multi-Agent 与 Volcano Engine Knowledge Base / RAG
+- 本地中文业务知识源
 - OpenAPI Tool 契约、Mermaid 文档图
 
 ## 目录
@@ -137,7 +142,7 @@ python -m pip install -r backend/requirements.txt
 ## What this project demonstrates as an AI PM
 
 - 将模糊的 Agent 想法收敛为 Lead → Course → Trial → Conversion → Follow-up 的业务工作流。
-- 为 LLM、RAG、确定性 Tool 与人工确认划分职责边界。
+- 为 LLM、RAG、确定性 Tool 与人工确认划分职责边界，并在 Coze Debug 中人工验证关键路径。
+- 用 Golden Case、Debug trace 和最终回答共同定义质量门槛；发现路由、Tool 或写入质量缺口后迭代边界与 guardrail。
 - 用动态数据 grounding、Tool 参数契约与受控写入降低幻觉和脏数据风险。
-- 用 Golden Case 覆盖路由、事实、执行路径与安全。
 - 显式记录 V1 取舍，优先验证高价值闭环而不是堆叠基础设施。

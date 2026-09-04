@@ -11,6 +11,8 @@
 
 这些用例用于检查路由、Tool 调用、实体识别、RAG、澄清、线索分析和 HITL 安全。它们是测试资产，不是 RAG 知识源。
 
+此外，六条核心路径已在 Coze Preview / Debug 中以 synthetic demo data 人工完成 E2E 验证。这不等于 production deployment，也不等于已具备自动化回归。
+
 ## 当前质量门槛
 
 | 维度 | 需要验证的问题 |
@@ -25,13 +27,13 @@
 
 ## Evaluation lesson
 
-只看最终回答不能可靠证明 Agent 走过正确的 Tool 路径。例如，一个回答可能看似给出了正确名额，却没有调用 `get_course_info`。因此开发阶段建议把以下三者一起作为证据：
+开发中已经发现：只让 LLM Judge 观察最终回答，无法可靠判断 Tool 是否真的被调用。例如，一个回答可能看似给出了正确名额，却没有调用 `get_course_info`。人工 Debug 阶段因此同时观察 Routing、Tool Calling、Entity Resolution、Grounding、HITL 与 Final Answer：
 
 ```text
 Golden Case + visible execution trace + final answer
 ```
 
-当前仓库不主张已经具备正式 Coze evaluator、线上成功率或生产监控分数。若要形成可比较的量化结果，需要先在可观察的执行环境中固定输入、保存 Tool trace，并定义每类用例的通过条件。
+当前尚无正式 Coze evaluator、自动 trace evaluation、线上成功率或生产监控分数。若要形成可比较的量化结果，需要先在可观察的执行环境中固定输入、保存 Tool trace，并定义每类用例的通过条件。
 
 ## CRM writeback checks
 

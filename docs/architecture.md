@@ -9,8 +9,8 @@ flowchart TB
     Router --> Course[课程顾问 Agent]
     Router --> Growth[转化跟进 Agent]
 
-    Course --> Knowledge[本地中文知识源
-课程原则 / FAQ / 训练知识]
+    Course --> Knowledge[Volcano Engine Knowledge Base / RAG
+水平判断 / 训练原则 / 试听 FAQ]
     Growth --> Knowledge
 
     Lead --> API[FastAPI OpenAPI Tools]
@@ -29,7 +29,7 @@ flowchart TB
 | Layer | 负责什么 | 不负责什么 |
 | --- | --- | --- |
 | LLM / Agent | 意图理解、路由、信息归纳、建议生成 | 编造动态事实、直接改变业务真相 |
-| RAG / 知识源 | 训练知识、FAQ、课程选择原则 | 当前名额、价格、客户记录 |
+| Volcano Engine Knowledge Base / RAG | 水平判断、训练原则、试听 FAQ 和稳定业务知识 | 当前名额、价格、客户记录 |
 | FastAPI Tools | 参数校验、查询、写入、规则执行 | 开放式语义判断 |
 | SQLite | 当前 Demo CRM 的事实来源 | 生成自然语言建议 |
 | Human-in-the-loop | 确认高风险写操作 | 代替系统查询或计算 |
@@ -43,7 +43,18 @@ flowchart TB
 | 课程顾问 Agent | 孩子适合什么课？ | 收集约束、调用课程推荐、使用通用知识 |
 | 转化跟进 Agent | 为什么尚未报名，下一步怎么推进？ | 分析事实、评分、必要时找替代班级 |
 
-本地 Coze 文件是设计规格，不是线上配置导出。写入 Tool 已在后端实现，但“何时由 Agent 发起写入”的触发条件应作为部署前的单独工作流决策。
+本地 Coze 文件记录职责与 Prompt 规格；六条核心流程已在 Coze Preview / Debug 中以 synthetic demo data 人工完成 E2E 验证。它不是 production deployment：自动化回归、线上监控、认证与真实消息集成仍未完成。
+
+## Verified E2E paths
+
+| Flow | Coze Preview / Debug manual verification |
+| --- | --- |
+| 指定课程查询 | Course Agent 调用 `get_course_info` 返回动态课程信息 |
+| CRM 客户分析 | CRM 查询、`score_lead` 与成交阻塞分析 |
+| 已有客户写回 | 身份识别后调用 `record_interaction`，再读取确认 |
+| 新客户建档 | `upsert_lead` 后通过 CRM 查询确认 |
+| 新客户首次咨询 | `upsert_lead` → `record_interaction`，再读取确认 |
+| HITL 跟进 | 确认后 `create_followup` 写入；取消不写入 |
 
 ## Tool risk model
 
@@ -66,4 +77,4 @@ flowchart TB
 
 ## Production evolution
 
-从原型走向生产需要：托管数据库与迁移、认证/RBAC、租户隔离、工具 trace、审计日志、生产级身份解析、线上指标与评测监控、以及与真实 CRM 或教务系统的集成。这些不是当前已实现能力。
+从原型走向生产需要：托管数据库与迁移、production deployment、认证/RBAC、租户隔离、自动化 trace evaluation、审计日志、生产级身份解析、生产监控，以及与真实 CRM、教务和消息系统的集成。这些不是当前已实现能力。

@@ -8,6 +8,8 @@
 
 **价值**：把录入动作拆成可校验的实体创建与事实写入，避免自动覆盖已有客户资料。
 
+已在 Coze Preview / Debug 以 synthetic demo data 人工验证新 Lead 建档，并验证新 Lead 后可继续写入首次咨询记录。
+
 ## 2. 查询动态课程名额
 
 **输入**：“周末兴趣班还有几个名额？”
@@ -15,6 +17,8 @@
 **流程**：课程顾问调用 `get_course_info`。
 
 **价值**：价格、班次、教练与剩余名额由当前数据库返回，不由 LLM 或知识库猜测。
+
+已在 Coze Preview / Debug 以 synthetic demo data 人工完成此路径验证。
 
 ## 3. 试听满意但价格阻塞
 
@@ -24,6 +28,8 @@
 
 **价值**：结论必须回到 CRM 事实：积极试听反馈与继续学习意愿可以并存于价格阻塞，不能只凭一句描述下判断。
 
+已在 Coze Preview / Debug 以 synthetic demo data 人工完成此路径验证。
+
 ## 4. 最新反馈写回
 
 **输入**：顾问提供客户刚刚表达的预算、时间或课程偏好。
@@ -32,6 +38,8 @@
 
 **保护**：致谢、单独 emoji、重复文本和高相似改写会被拦截；预算从 2000 变为 3000、周六变周日、考虑变不报名等新事实会被保留。
 
+已在 Coze Preview / Debug 以 synthetic demo data 人工完成已有客户写回，并通过再次读取确认 interaction 已入库。
+
 ## 5. 创建跟进任务
 
 **输入**：“为张女士创建周五跟进任务。”
@@ -39,3 +47,7 @@
 **流程**：Agent 可以先准备任务内容，但需进入确认步骤后才能调用 `create_followup`。
 
 **价值**：自然语言降低操作摩擦，但不跳过对 CRM 写操作的控制。
+
+已在 Coze Preview / Debug 人工验证确认写入与取消不写入两条分支。
+
+所有场景使用 synthetic demo data；以上是 Coze Preview / Debug 人工 E2E 验证，不代表真实客户效果、production SLA、自动化 regression 或真实消息渠道集成。

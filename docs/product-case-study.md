@@ -43,7 +43,7 @@ CoachFlow 的产品假设是：让员工以自然语言提出业务任务，同�
 
 ### 决策 1：将 RAG 与实时业务事实分开
 
-课程选择原则、训练知识、试听 FAQ 等可以来自知识源。班级名额、价格、教练、CRM 互动和试听记录会变化，必须来自结构化 Tool。这样避免模型把历史知识当作当前业务事实。
+Volcano Engine Knowledge Base / RAG 已在 Coze Agent 中用于水平判断、训练原则、试听 FAQ 和稳定业务知识。班级名额、价格、教练、CRM 互动和试听记录会变化，必须来自结构化 Tool。这样避免模型把历史知识当作当前业务事实。
 
 ### 决策 2：把 LLM 放在解释层，而不是事实层
 
@@ -69,14 +69,15 @@ V1 聚焦高频链路中的读、写、分析和跟进边界。完整后台、�
 - 基于年龄、水平、时间、预算和容量的确定性课程推荐。
 - 基于试听评分、互动最近度、互动频次与调用方输入信号的确定性 Lead Score。
 - CRM 互动的低信息、完全重复与近重复保护。
-- 本地 Coze Multi-Agent 职责、风险与 Prompt 规格。
+- Coze Multi-Agent（主控、招生线索、课程顾问、转化跟进）在 Preview / Debug 中人工完成六条核心 E2E Flow。
+- Volcano Engine Knowledge Base / RAG 已用于 Coze Agent 的稳定业务知识检索。
 - 两个 Golden Case 工作簿：12 条核心用例和 36 条补充用例。
 
 ## Evidence 与当前限制
 
 数据库记录、课程和 CRM 客户均为虚构 Demo 数据。仓库没有真实客户、真实机构合作、商业营收、转化率或人工节省数据，因此不对这些结果作任何主张。
 
-本地规格说明了 Coze Agent 的职责，但不等于已验证线上 Coze 工作流会自动调用全部写入 Tool。生产上线前还需要明确写入触发策略、身份确认方式、权限模型、可观测性和线上评测。
+六条核心路径已在 Coze Preview / Debug 中以 synthetic demo data 人工完成 E2E 验证：指定课程动态查询、CRM 客户分析、已有客户写回、新客户建档、新客户首次咨询写回，以及 HITL 跟进的确认 / 取消分支。该证据不代表 production deployment、真实客户效果、自动化 trace evaluation 或线上 SLA；这些仍是上线前工作。
 
 ## Resume-ready bullets
 
@@ -86,7 +87,7 @@ V1 聚焦高频链路中的读、写、分析和跟进边界。完整后台、�
 
 ## Interview 60-second pitch
 
-我做 CoachFlow 是想解决培训机构招生里“信息散、判断慢、录入不完整”的问题。场景表面像 CRM，实质是连续任务：识别家长、读取试听和互动、查询动态课程、判断下一步，再决定是否写回。我的关键判断是把 RAG、LLM、结构化 Tool 和人工确认分层：稳定知识交给 RAG，实时名额和 CRM 事实只能查 Tool，写操作由后端校验，高风险跟进必须 HITL。原型用虚构数据和 Golden Case 验证流程与边界；下一步是补充线上 trace、权限和真实机构试点，而不是先扩功能。
+我做 CoachFlow 是想解决培训机构招生里“信息散、判断慢、录入不完整”的问题。场景表面像 CRM，实质是连续任务：识别家长、读取试听和互动、查询动态课程、判断下一步，再决定是否写回。我的关键判断是把 RAG、LLM、结构化 Tool 和人工确认分层：稳定知识交给 RAG，实时名额和 CRM 事实只能查 Tool，写操作由后端校验，高风险跟进必须 HITL。原型已用虚构数据、Golden Case、Debug trace 和人工 E2E 验证迭代流程与边界；下一步是 production deployment、自动化 trace evaluation、权限和真实机构试点，而不是先扩功能。
 
 ## STAR / Deep Dive Talking Points
 
