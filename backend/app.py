@@ -125,6 +125,22 @@ class RecommendationResponse(BaseModel):
     recommendations: list[RecommendationItem]
 
 
+class CourseScheduleItem(BaseModel):
+    schedule: str
+    coach: str
+    remaining_capacity: int
+    available: bool
+
+
+class CourseInfoResponse(BaseModel):
+    course_name: str
+    price: int
+    schedule: list[CourseScheduleItem]
+    coach: list[str]
+    remaining_capacity: int
+    available: bool
+
+
 class LeadScoreBreakdown(BaseModel):
     trial_rating: int
     recency: int
@@ -241,6 +257,49 @@ def course_recommendation(request: RecommendationRequest):
     return {"recommendations": recommend_courses(
         [dict(row) for row in candidates], LEVEL_MAP[request.level], request.preferred_days, request.max_price
     )}
+
+
+@app.get(
+    "/courses/info",
+    operation_id="get_course_info",
+    summary="获取指定课程的当前信息",
+    description="根据课程名称获取课程价格、班级时间、教练与当前剩余名额。这是只读查询，不会写入数据库。",
+    tags=["Agent Tools"],
+    response_model=CourseInfoResponse,
+)
+def course_info(course_name: str):
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT courses.name AS course_name, courses.price, classes.weekday,
+                   classes.start_time, coaches.name AS coach_name,
+                   classes.capacity - classes.enrolled AS remaining_capacity
+            FROM courses
+            JOIN classes ON classes.course_id = courses.id
+            JOIN coaches ON coaches.id = classes.coach_id
+            WHERE courses.name = ?
+            ORDER BY classes.id
+        """, (course_name,)).fetchall()
+
+    if not rows:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    schedule = [
+        {
+            "schedule": f"{row['weekday']} {row['start_time']}",
+            "coach": row["coach_name"],
+            "remaining_capacity": row["remaining_capacity"],
+            "available": row["remaining_capacity"] > 0,
+        }
+        for row in rows
+    ]
+    return {
+        "course_name": rows[0]["course_name"],
+        "price": rows[0]["price"],
+        "schedule": schedule,
+        "coach": list(dict.fromkeys(row["coach_name"] for row in rows)),
+        "remaining_capacity": sum(row["remaining_capacity"] for row in rows),
+        "available": any(row["remaining_capacity"] > 0 for row in rows),
+    }
 
 
 @app.post(
