@@ -67,6 +67,14 @@ class RecordInteractionRequest(BaseModel):
     content: str = Field(min_length=1, max_length=1000)
 
 
+class UpsertLeadRequest(BaseModel):
+    parent_name: str = Field(min_length=1, max_length=100)
+    child_name: str | None = Field(default=None, max_length=100)
+    child_age: int | None = Field(default=None, ge=1)
+    level: Literal["初学者", "有基础", "体校水平", "省队水平"] | None = None
+    preferred_time: str | None = Field(default=None, max_length=100)
+
+
 class LeadResponse(BaseModel):
     id: int
     parent_name: str
@@ -103,6 +111,12 @@ class RecordInteractionResponse(BaseModel):
     lead_id: int | None = None
     channel: Literal["wechat", "phone", "in_store"] | None = None
     content: str | None = None
+
+
+class UpsertLeadResponse(BaseModel):
+    created: bool
+    reason: Literal["existing_lead", "ambiguous_identity", "insufficient_information"] | None = None
+    lead_id: int | None = None
 
 
 class FollowupResponse(BaseModel):
@@ -242,6 +256,54 @@ def classes():
 )
 def leads():
     return get_rows("SELECT * FROM leads ORDER BY id")
+
+
+@app.post(
+    "/leads",
+    operation_id="upsert_lead",
+    summary="创建明确的新招生线索",
+    description="仅在没有同名家长和孩子的现有 Lead 时创建新的 CRM 线索。",
+    tags=["Agent Tools"],
+    response_model=UpsertLeadResponse,
+    response_model_exclude_none=True,
+)
+def upsert_lead(request: UpsertLeadRequest):
+    parent_name = normalize_content(request.parent_name)
+    child_name = normalize_content(request.child_name) if request.child_name else None
+    preferred_time = normalize_content(request.preferred_time) if request.preferred_time else None
+
+    if not parent_name:
+        raise HTTPException(status_code=422, detail="Parent name must not be empty")
+    if not child_name:
+        return {"created": False, "reason": "ambiguous_identity"}
+
+    with get_connection() as conn:
+        existing = conn.execute("""
+            SELECT id FROM leads
+            WHERE parent_name = ? AND child_name = ?
+            ORDER BY id
+            LIMIT 1
+        """, (parent_name, child_name)).fetchone()
+        if existing:
+            return {"created": False, "reason": "existing_lead", "lead_id": existing["id"]}
+
+        if request.child_age is None or request.level is None:
+            return {"created": False, "reason": "insufficient_information"}
+
+        lead_id = conn.execute("""
+            INSERT INTO leads (parent_name, child_name, child_age, level, preferred_time, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            parent_name,
+            child_name,
+            request.child_age,
+            request.level,
+            preferred_time,
+            "new",
+            datetime.now().isoformat(timespec="seconds"),
+        )).lastrowid
+
+    return {"created": True, "lead_id": lead_id}
 
 
 @app.get(
