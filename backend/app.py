@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Path
@@ -61,6 +61,12 @@ class CreateFollowupRequest(BaseModel):
     due_date: date = Field(description="计划跟进日期，格式 YYYY-MM-DD。")
 
 
+class RecordInteractionRequest(BaseModel):
+    lead_id: int
+    channel: Literal["wechat", "phone", "in_store"]
+    content: str = Field(min_length=1, max_length=1000)
+
+
 class LeadResponse(BaseModel):
     id: int
     parent_name: str
@@ -88,6 +94,15 @@ class InteractionResponse(BaseModel):
     channel: str
     content: str
     created_at: str
+
+
+class RecordInteractionResponse(BaseModel):
+    written: bool
+    reason: Literal["low_information", "duplicate"] | None = None
+    interaction_id: int | None = None
+    lead_id: int | None = None
+    channel: Literal["wechat", "phone", "in_store"] | None = None
+    content: str | None = None
 
 
 class FollowupResponse(BaseModel):
@@ -161,6 +176,21 @@ class LeadScoreResponse(BaseModel):
     score: int
     level: Literal["high", "medium", "low"]
     breakdown: LeadScoreBreakdown
+
+
+LOW_INFORMATION_CONTENT = {
+    "你好", "您好", "好的", "好", "行", "可以", "收到", "谢谢", "感谢",
+    "嗯", "嗨", "嗨嗨", "哈", "明白", "知道了", "ok", "hello", "hi", "hey", "thanks", "thx",
+}
+
+
+def normalize_content(content: str) -> str:
+    return " ".join(content.split())
+
+
+def is_low_information(content: str) -> bool:
+    compact = "".join(character for character in content.casefold() if character.isalnum())
+    return not compact or compact in LOW_INFORMATION_CONTENT
 
 
 def get_rows(query):
@@ -239,6 +269,50 @@ def lead_detail(lead_id: int = Path(description="CoachFlow CRM 中的招生线�
         "trials": [dict(row) for row in trials],
         "interactions": [dict(row) for row in interactions],
         "followups": [dict(row) for row in followups],
+    }
+
+
+@app.post(
+    "/interactions",
+    operation_id="record_interaction",
+    summary="记录有效客户互动",
+    description="为已有 Lead 写入一条经基础质量校验的 CRM 互动事实。",
+    tags=["Agent Tools"],
+    response_model=RecordInteractionResponse,
+    response_model_exclude_none=True,
+)
+def record_interaction(request: RecordInteractionRequest):
+    content = normalize_content(request.content)
+    if not content:
+        raise HTTPException(status_code=422, detail="Content must not be empty")
+
+    with get_connection() as conn:
+        if not conn.execute("SELECT 1 FROM leads WHERE id = ?", (request.lead_id,)).fetchone():
+            raise HTTPException(status_code=404, detail="Lead not found")
+        if is_low_information(content):
+            return {"written": False, "reason": "low_information"}
+
+        now = datetime.now()
+        cutoff = (now - timedelta(minutes=10)).isoformat(timespec="seconds")
+        duplicate = conn.execute("""
+            SELECT 1 FROM interactions
+            WHERE lead_id = ? AND channel = ? AND content = ? AND created_at >= ?
+            LIMIT 1
+        """, (request.lead_id, request.channel, content, cutoff)).fetchone()
+        if duplicate:
+            return {"written": False, "reason": "duplicate"}
+
+        interaction_id = conn.execute(
+            "INSERT INTO interactions (lead_id, channel, content, created_at) VALUES (?, ?, ?, ?)",
+            (request.lead_id, request.channel, content, now.isoformat(timespec="seconds")),
+        ).lastrowid
+
+    return {
+        "written": True,
+        "interaction_id": interaction_id,
+        "lead_id": request.lead_id,
+        "channel": request.channel,
+        "content": content,
     }
 
 
