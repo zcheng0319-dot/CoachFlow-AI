@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from difflib import SequenceMatcher
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Path
@@ -196,6 +197,7 @@ LOW_INFORMATION_CONTENT = {
     "你好", "您好", "好的", "好", "行", "可以", "收到", "谢谢", "感谢",
     "嗯", "嗨", "嗨嗨", "哈", "明白", "知道了", "ok", "hello", "hi", "hey", "thanks", "thx",
 }
+NEAR_DUPLICATE_THRESHOLD = 0.90
 
 
 def normalize_content(content: str) -> str:
@@ -205,6 +207,10 @@ def normalize_content(content: str) -> str:
 def is_low_information(content: str) -> bool:
     compact = "".join(character for character in content.casefold() if character.isalnum())
     return not compact or compact in LOW_INFORMATION_CONTENT
+
+
+def is_near_duplicate(content: str, existing_content: str) -> bool:
+    return SequenceMatcher(None, content, existing_content, autojunk=False).ratio() >= NEAR_DUPLICATE_THRESHOLD
 
 
 def get_rows(query):
@@ -362,6 +368,13 @@ def record_interaction(request: RecordInteractionRequest):
             LIMIT 1
         """, (request.lead_id, request.channel, content, cutoff)).fetchone()
         if duplicate:
+            return {"written": False, "reason": "duplicate"}
+
+        recent_interactions = conn.execute("""
+            SELECT content FROM interactions
+            WHERE lead_id = ? AND channel = ? AND created_at >= ?
+        """, (request.lead_id, request.channel, cutoff)).fetchall()
+        if any(is_near_duplicate(content, row["content"]) for row in recent_interactions):
             return {"written": False, "reason": "duplicate"}
 
         interaction_id = conn.execute(
