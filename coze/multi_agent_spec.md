@@ -35,6 +35,12 @@ Coze Start 将请求交给 CoachFlow 主控 Agent；主控 Agent 负责分发三
 
 同一 Tool 可以被多个业务 Agent 复用；每个 Agent 只使用完成自身职责所需的 Tool。
 
+## Action Risk
+
+L0：读取与分析，可自动执行。L1：生成跟进建议或文案草稿，不修改系统。L2：创建跟进任务，必须人工确认。L3：发送消息、报名、支付、退款和删除，V1 禁止。
+
+`create_followup` 不直接挂给任何 Agent；只有 Coze 的“创建跟进任务（需确认）”Workflow 可以调用它。
+
 ## Applicable Scenarios
 
 **招生线索 Agent**：今天有哪些家长值得关注？帮我看看张女士的情况。哪些试听用户意向比较高？这个家长的成交可能性怎么样？

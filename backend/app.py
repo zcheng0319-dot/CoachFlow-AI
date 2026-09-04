@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Path
@@ -45,6 +45,15 @@ class LeadScoreRequest(BaseModel):
     )
 
 
+class CreateFollowupRequest(BaseModel):
+    content: str = Field(
+        min_length=1,
+        max_length=300,
+        description="需要业务人员后续执行的具体跟进任务，例如“沟通价格顾虑并介绍更匹配的课程方案”。",
+    )
+    due_date: date = Field(description="计划跟进日期，格式 YYYY-MM-DD。")
+
+
 class LeadResponse(BaseModel):
     id: int
     parent_name: str
@@ -74,10 +83,20 @@ class InteractionResponse(BaseModel):
     created_at: str
 
 
+class FollowupResponse(BaseModel):
+    id: int
+    lead_id: int
+    content: str
+    due_date: str
+    status: Literal["pending"]
+    created_at: str
+
+
 class LeadDetailResponse(BaseModel):
     lead: LeadResponse
     trials: list[TrialResponse]
     interactions: list[InteractionResponse]
+    followups: list[FollowupResponse]
 
 
 class RecommendationBreakdown(BaseModel):
@@ -189,10 +208,14 @@ def lead_detail(lead_id: int = Path(description="CoachFlow CRM 中的招生线�
         interactions = conn.execute(
             "SELECT * FROM interactions WHERE lead_id = ? ORDER BY created_at", (lead_id,)
         ).fetchall()
+        followups = conn.execute(
+            "SELECT * FROM followups WHERE lead_id = ? ORDER BY due_date, id", (lead_id,)
+        ).fetchall()
     return {
         "lead": dict(lead),
         "trials": [dict(row) for row in trials],
         "interactions": [dict(row) for row in interactions],
+        "followups": [dict(row) for row in followups],
     }
 
 
@@ -251,3 +274,26 @@ def lead_score(request: LeadScoreRequest, lead_id: int = Path(description="Coach
         request.as_of,
     )
     return {"lead_id": lead_id, **result}
+
+
+@app.post(
+    "/leads/{lead_id}/followups",
+    operation_id="create_followup",
+    summary="创建跟进任务",
+    description="为指定招生线索创建一条待处理的 CRM 跟进任务。该写操作必须在上层 Human-in-the-loop 工作流确认后调用。",
+    tags=["Agent Tools"],
+    response_model=FollowupResponse,
+)
+def create_followup(
+    request: CreateFollowupRequest,
+    lead_id: int = Path(description="CoachFlow CRM 中的招生线索 ID。"),
+):
+    with get_connection() as conn:
+        if not conn.execute("SELECT 1 FROM leads WHERE id = ?", (lead_id,)).fetchone():
+            raise HTTPException(status_code=404, detail="Lead not found")
+        followup_id = conn.execute(
+            "INSERT INTO followups (lead_id, content, due_date, created_at) VALUES (?, ?, ?, ?)",
+            (lead_id, request.content, request.due_date.isoformat(), datetime.now().isoformat(timespec="seconds")),
+        ).lastrowid
+        followup = conn.execute("SELECT * FROM followups WHERE id = ?", (followup_id,)).fetchone()
+    return dict(followup)

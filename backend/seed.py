@@ -96,6 +96,11 @@ INTERACTIONS = [
     (30, 12, "wechat", "孩子7岁，周日上午的启蒙班还有位置吗？", "2026-09-02 10:10"),
 ]
 
+FOLLOWUPS = [
+    (1, 2, "试听满意但时间冲突，需要确认周末替代班。", "2026-09-04", "pending", "2026-09-03 10:00"),
+    (2, 5, "已预约试听，需要在试听前确认到店安排。", "2026-09-05", "pending", "2026-09-03 11:00"),
+]
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS coaches (
     id INTEGER PRIMARY KEY,
@@ -153,12 +158,21 @@ CREATE TABLE IF NOT EXISTS interactions (
     created_at TEXT NOT NULL,
     FOREIGN KEY (lead_id) REFERENCES leads(id)
 );
+CREATE TABLE IF NOT EXISTS followups (
+    id INTEGER PRIMARY KEY,
+    lead_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    due_date TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status = 'pending'),
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (lead_id) REFERENCES leads(id)
+);
 """
 
 
 def print_counts(conn):
     print("CoachFlow database ready.")
-    for table in ("coaches", "courses", "classes", "leads", "trials", "interactions"):
+    for table in ("coaches", "courses", "classes", "leads", "trials", "interactions", "followups"):
         print(f"{table}: {conn.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0]}")
 
 
@@ -168,6 +182,8 @@ def main():
         conn.executescript(SCHEMA)
         if conn.execute("SELECT COUNT(*) FROM coaches").fetchone()[0]:
             conn.execute("UPDATE leads SET preferred_time = 'weekend' WHERE id = 2")
+            if not conn.execute("SELECT COUNT(*) FROM followups").fetchone()[0]:
+                conn.executemany("INSERT INTO followups VALUES (?, ?, ?, ?, ?, ?)", FOLLOWUPS)
             print_counts(conn)
             return
         conn.executemany("INSERT INTO coaches VALUES (?, ?, ?, ?, ?)", COACHES)
@@ -176,6 +192,7 @@ def main():
         conn.executemany("INSERT INTO leads VALUES (?, ?, ?, ?, ?, ?, ?, ?)", LEADS)
         conn.executemany("INSERT INTO trials VALUES (?, ?, ?, ?, ?, ?, ?)", TRIALS)
         conn.executemany("INSERT INTO interactions VALUES (?, ?, ?, ?, ?)", INTERACTIONS)
+        conn.executemany("INSERT INTO followups VALUES (?, ?, ?, ?, ?, ?)", FOLLOWUPS)
         print_counts(conn)
 
 
