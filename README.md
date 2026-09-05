@@ -4,18 +4,11 @@
 
 CoachFlow 用一套共享业务数据，提供两个独立的 AI 体验：员工通过 **CoachFlow Copilot** 管理线索和转化，家长通过 **CoachFlow Concierge** 咨询训练与课程。
 
-> **证据等级**：当前为本地原型，所有业务记录均为 synthetic demo data。Staff Copilot 的六条核心流程已在 Coze Preview / Debug 中人工验证；Customer Concierge 已在 Coze 创建独立 Single Agent 并接入知识库及两个课程查询 Tool。项目未 production 化、未接入真实客户或消息渠道，也没有自动化回归、线上指标或 SLA。
-
-<table>
-  <tr>
-    <td width="50%"><img src="docs/assets/coachflow-web-concept.png" alt="CoachFlow Copilot 网页端概念展示" /></td>
-    <td width="50%"><img src="docs/assets/c端助手页面09_15_03.png" alt="CoachFlow Concierge 客户端 AI 课程顾问演示页面" /></td>
-  </tr>
-  <tr>
-    <td><sub>Staff Copilot 概念界面；数据与指标仅为视觉示例。</sub></td>
-    <td><sub>Customer Concierge 产品 Demo；课程与对话均为 synthetic demo data。</sub></td>
-  </tr>
-</table>
+<div align="center">
+  <img width="47%" src="docs/assets/coachflow-web-concept.png" alt="CoachFlow Copilot 网页端概念展示" />&nbsp;&nbsp;&nbsp;&nbsp;
+  <img width="47%" src="docs/assets/c端助手页面09_15_03.png" alt="CoachFlow Concierge 客户端 AI 课程顾问演示页面" />
+</div>
+<p align="center"><sub>左：Staff Copilot 概念界面（数据与指标仅为视觉示例）　　右：Customer Concierge 产品 Demo（课程与对话为 synthetic demo data）</sub></p>
 
 ## One Business, Two Agent Experiences
 
