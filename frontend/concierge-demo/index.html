@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="CoachFlow Concierge 客户端 AI 课程顾问产品演示页面"
+    />
+    <title>CoachFlow AI 课程顾问</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="CoachFlow 首页">
+        <span class="brand-mark" aria-hidden="true"><span>CF</span></span>
+        <span class="brand-copy">
+          <strong>CoachFlow</strong>
+          <small>AI 课程顾问</small>
+        </span>
+      </a>
+      <div class="header-status" aria-label="服务状态">
+        <span class="status-dot" aria-hidden="true"></span>
+        AI 顾问在线
+      </div>
+      <button class="header-action" type="button" data-focus-chat>开始对话</button>
+    </header>
+
+    <main id="top">
+      <section class="intro shell" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">CoachFlow Concierge</p>
+          <h1 id="page-title">让家长更轻松地找到<br />适合孩子的乒乓球课程</h1>
+        </div>
+        <div class="intro-detail">
+          <p>了解训练方向、初步判断水平，并结合年龄、时间和预算匹配合适班型。</p>
+          <ul class="capability-list" aria-label="主要能力">
+            <li>训练问题解答</li>
+            <li>水平与课程匹配</li>
+            <li>当前班型查询</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="assistant-section shell" aria-label="AI 课程顾问演示">
+        <div class="chat-panel">
+          <div class="panel-header">
+            <div class="assistant-identity">
+              <div class="assistant-avatar" aria-hidden="true">AI</div>
+              <div>
+                <h2>CoachFlow AI 课程顾问</h2>
+                <p><span class="status-dot" aria-hidden="true"></span>正在为您提供课程建议</p>
+              </div>
+            </div>
+            <span class="panel-label">家长咨询</span>
+          </div>
+
+          <div class="chat-stream" id="chatStream" aria-live="polite">
+            <div class="message-row assistant">
+              <div class="message-avatar" aria-hidden="true">AI</div>
+              <div class="message-bubble">
+                <p>你好，我是 CoachFlow AI 课程顾问 👋</p>
+                <p>可以告诉我孩子的年龄、学习经历，或者您想了解的课程，我来帮您判断适合的训练方向和班型。</p>
+              </div>
+            </div>
+            <div class="message-row user">
+              <div class="message-bubble">
+                <p>我孩子 9 岁，之前没系统学过，周末有时间，预算 3000 以内，有什么适合的课？</p>
+              </div>
+            </div>
+            <div class="message-row assistant" id="answerMessage">
+              <div class="message-avatar" aria-hidden="true">AI</div>
+              <div class="message-bubble answer">
+                <p>根据您的描述，孩子更接近<strong>零基础入门阶段</strong>。</p>
+                <p>目前优先推荐<strong>周末兴趣班</strong>：适合 6–11 岁初学者，周六上午上课，价格也在您的预算内。如果孩子已有一些基础，也可以比较下方的强化班。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-prompts" aria-label="快捷提问">
+            <button type="button" data-demo="starter">零基础从什么课开始？</button>
+            <button type="button" data-demo="course">周末兴趣班多少钱？</button>
+            <button type="button" data-demo="age">7 岁学球会不会太早？</button>
+            <button type="button" data-demo="level">学过一年算什么水平？</button>
+          </div>
+
+          <form class="composer" id="chatForm">
+            <label class="sr-only" for="questionInput">输入课程或训练问题</label>
+            <input
+              id="questionInput"
+              name="question"
+              type="text"
+              autocomplete="off"
+              placeholder="输入孩子年龄、学习经历，或想了解的课程…"
+            />
+            <button type="submit">发送 <span aria-hidden="true">↗</span></button>
+          </form>
+        </div>
+
+        <aside class="recommendation-panel" aria-labelledby="recommendationTitle">
+          <div class="recommendation-heading">
+            <div>
+              <p class="eyebrow">为您匹配</p>
+              <h2 id="recommendationTitle">推荐课程</h2>
+            </div>
+            <span class="match-badge">2 个班型</span>
+          </div>
+
+          <div class="course-list" id="courseList">
+            <article class="course-card featured">
+              <div class="course-topline">
+                <span class="course-rank">优先推荐</span>
+                <span class="seat-status"><i aria-hidden="true"></i>剩余 9 个名额</span>
+              </div>
+              <h3>周末兴趣班</h3>
+              <p class="course-summary">轻松启蒙，帮助孩子建立兴趣与基本动作。</p>
+              <div class="course-tags">
+                <span>6–11 岁</span><span>初学者</span><span>周末班</span>
+              </div>
+              <dl class="course-facts">
+                <div><dt>上课时间</dt><dd>周六 09:00</dd></div>
+                <div><dt>授课教练</dt><dd>赵琳</dd></div>
+              </dl>
+              <div class="course-footer">
+                <div><small>课程价格</small><strong>¥1,600</strong></div>
+                <button type="button" data-course-question="周末兴趣班还有几个名额？">了解详情</button>
+              </div>
+            </article>
+
+            <article class="course-card">
+              <div class="course-topline">
+                <span class="course-rank secondary">进阶备选</span>
+                <span class="seat-status"><i aria-hidden="true"></i>剩余 3 个名额</span>
+              </div>
+              <h3>周末基础强化班</h3>
+              <p class="course-summary">适合已有基础、希望进一步规范动作的孩子。</p>
+              <div class="course-tags">
+                <span>8–12 岁</span><span>有基础</span><span>周末班</span>
+              </div>
+              <dl class="course-facts">
+                <div><dt>上课时间</dt><dd>周日 14:00</dd></div>
+                <div><dt>授课教练</dt><dd>李浩</dd></div>
+              </dl>
+              <div class="course-footer">
+                <div><small>课程价格</small><strong>¥3,000</strong></div>
+                <button type="button" data-course-question="周末基础强化班适合什么水平？">了解详情</button>
+              </div>
+            </article>
+          </div>
+
+          <p class="data-note"><span aria-hidden="true">↻</span> 课程信息以当前 Demo 数据为准</p>
+        </aside>
+      </section>
+
+      <section class="value-section shell" aria-labelledby="valueTitle">
+        <div class="section-heading">
+          <p class="eyebrow">从咨询到选课</p>
+          <h2 id="valueTitle">围绕家长真正关心的问题</h2>
+        </div>
+        <div class="value-grid">
+          <article class="value-card">
+            <span class="value-index">01</span>
+            <h3>训练咨询</h3>
+            <p>了解启蒙年龄、每周练习频率与入门训练建议。</p>
+          </article>
+          <article class="value-card">
+            <span class="value-index">02</span>
+            <h3>课程匹配</h3>
+            <p>综合孩子年龄、学习经历、时间偏好与预算范围。</p>
+          </article>
+          <article class="value-card">
+            <span class="value-index">03</span>
+            <h3>当前班型查询</h3>
+            <p>查看课程价格、上课时间、授课教练与剩余名额。</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>说明：本页面为 CoachFlow Concierge 产品演示页面，界面中的课程与对话内容均为 Demo 展示示例。</p>
+      <span>CoachFlow Concierge · Customer-facing AI Course Consultant</span>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
