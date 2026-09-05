@@ -25,6 +25,10 @@ CoachFlow 用一套共享业务数据，提供两个独立的 AI 体验：员工
 
 家长可以咨询乒乓球训练、判断大致水平、了解当前课程或获得课程推荐。当前 Concierge 只连接 CoachFlow 知识库、`get_course_info` 和 `recommend_courses`，不接触客户名单、销售评分或内部跟进策略。
 
+![CoachFlow Concierge 客户端 AI 课程顾问演示页面](docs/assets/c端助手页面09_15_03.png)
+
+*CoachFlow Concierge 客户端产品界面 Demo。图中课程与对话内容均为 synthetic demo data，仅用于展示面向家长的咨询、课程匹配与课程信息查询体验。*
+
 ## Shared Business Layer
 
 两个体验共享同一套业务事实，避免维护两套课程与客户数据。
