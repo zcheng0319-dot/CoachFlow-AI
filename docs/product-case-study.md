@@ -1,8 +1,8 @@
-# CoachFlow AI：从培训机构 CRM 痛点到受控 Agent 闭环
+# CoachFlow AI：从招生咨询到双端 Agent 转化闭环
 
 ## 一句话定位
 
-面向少儿运动培训机构的 AI-native CRM & Operations Copilot：用自然语言完成线索查询、课程匹配、试听分析与受控 CRM 写入。
+面向少儿运动培训机构的 AI-native lead conversion system：用共享业务数据同时服务家长咨询与机构内部转化。
 
 ## 问题定义
 
@@ -14,7 +14,16 @@ Lead → 课程匹配 → 试听 → 转化判断 → 跟进
 
 经营者需要回答的问题通常跨越多个系统事实：某位家长是否值得优先联系、孩子适合哪个仍有名额的班、试听后迟迟未报名的原因、最新沟通是否应该进入 CRM。传统 CRM 要求员工在多个界面之间查找、录入和判断，信息容易滞后或丢失。
 
-CoachFlow 的产品假设是：让员工以自然语言提出业务任务，同时由受控软件获取事实、验证写入，并把高风险动作留给人确认。
+CoachFlow 的产品假设是：家长与员工需要不同的 AI 体验，但可以共享同一套知识、课程与 CRM 业务层。家长获得课程咨询，员工获得线索分析和受控操作。
+
+## 双端产品模型
+
+| Experience | 用户 | 核心问题 | 架构 |
+| --- | --- | --- | --- |
+| CoachFlow Copilot | 老板、店长、招生顾问、课程顾问 | 今天应该关注哪个客户，下一步做什么？ | Multi-Agent |
+| CoachFlow Concierge | 潜在家长、潜在学员 | 我的孩子适合学什么，下一步如何开始？ | Single Agent |
+
+Copilot 处理 CRM、Lead、课程、试听、Interaction、评分、转化和跟进；Concierge 当前只处理训练咨询、水平判断、课程匹配和课程信息确认。二者共享 Volcano Engine Knowledge Base、FastAPI Structured Tools 和 SQLite prototype，但 Tool 权限按 Persona 分配。
 
 ## 用户与场景
 
@@ -23,6 +32,7 @@ CoachFlow 的产品假设是：让员工以自然语言提出业务任务，同�
 | 店长 / 运营 | 判断今天优先跟进谁 | 试听、互动、状态分散，优先级依赖经验 |
 | 课程顾问 | 为孩子匹配可报名班级 | 年龄、水平、时间、预算、容量要同时考虑 |
 | 招生顾问 | 记录新咨询和新反馈 | 手工录入负担高，聊天噪声会污染 CRM |
+| 潜在家长 / 学员 | 判断孩子适合什么、如何开始 | 通用训练知识与当前课程信息分散，难以完成下一步 |
 
 当前用少儿乒乓球培训验证该链路；相同模式可以迁移到篮球、羽毛球、网球等存在“咨询—课程—试听—转化”流程的培训业务。
 
@@ -37,7 +47,7 @@ CoachFlow 的产品假设是：让员工以自然语言提出业务任务，同�
 5. 必要时查询可替代课程；
 6. 输出下一步建议，而不是假称已经执行。
 
-主控 Agent 负责识别任务并分发；专项 Agent 面向线索、课程和转化问题；Tool 负责访问事实与运行规则。Agent 的价值是编排多步骤任务，不是替代数据库或业务规则。
+上述复杂链路属于 Staff Copilot，因此由主控 Agent 识别任务并分发给线索、课程和转化 Agent。Customer Concierge 的任务空间较窄，使用 Single Agent，减少路由错误、token 成本、延迟和上下文交接。架构跟随任务复杂度，而不是把 Multi-Agent 本身当作产品卖点。
 
 ## 核心产品决策
 
@@ -61,6 +71,10 @@ LLM 可以理解自然语言、路由任务、归纳证据并生成建议。Fast
 
 V1 聚焦高频链路中的读、写、分析和跟进边界。完整后台、支付、真实消息渠道、生产身份系统和分布式基础设施都不进入当前范围，避免用功能数量掩盖核心假设尚未验证的问题。
 
+### 决策 6：按 Persona 分配能力
+
+Staff Copilot 可以访问 CRM、Lead Score、互动与跟进能力；Customer Concierge 只访问知识库、`get_course_info` 和 `recommend_courses`。家长端不访问其他客户信息、内部销售标签、员工跟进策略或销售优先级；`upsert_lead` 仅作为未来受控 Lead Capture 方向。
+
 ## 已实现的能力
 
 - FastAPI + SQLite 业务后端和 OpenAPI Tool 契约。
@@ -70,6 +84,7 @@ V1 聚焦高频链路中的读、写、分析和跟进边界。完整后台、�
 - 基于试听评分、互动最近度、互动频次与调用方输入信号的确定性 Lead Score。
 - CRM 互动的低信息、完全重复与近重复保护。
 - Coze Multi-Agent（主控、招生线索、课程顾问、转化跟进）在 Preview / Debug 中人工完成六条核心 E2E Flow。
+- 独立的 CoachFlow Concierge Single Agent，已接入乒乓球知识库、`get_course_info` 与 `recommend_courses`。
 - Volcano Engine Knowledge Base / RAG 已用于 Coze Agent 的稳定业务知识检索。
 - 两个 Golden Case 工作簿：12 条核心用例和 36 条补充用例。
 
@@ -79,17 +94,19 @@ V1 聚焦高频链路中的读、写、分析和跟进边界。完整后台、�
 
 六条核心路径已在 Coze Preview / Debug 中以 synthetic demo data 人工完成 E2E 验证：指定课程动态查询、CRM 客户分析、已有客户写回、新客户建档、新客户首次咨询写回，以及 HITL 跟进的确认 / 取消分支。该证据不代表 production deployment、真实客户效果、自动化 trace evaluation 或线上 SLA；这些仍是上线前工作。
 
+上述六条路径属于 Staff Copilot。Customer Concierge 当前只声明已创建独立 Single Agent 并完成知识库与两个课程 Tool 的接入；不将 Staff 侧验证结果外推为 Customer 侧成功率。Customer Lead Capture、真实渠道身份与跨端归因仍待设计。
+
 ## Resume-ready bullets
 
 完整的 Bad Case → Trace → Root Cause → 最小修改 → 回归过程见 [Agent Iteration Story](agent-iteration-story.md)，涵盖路由、过度执行、近重复、参数类型、HITL、评测与动态信息查询。每项分别标注源码证据、人工 Coze 记录与尚待补充的 trace。
 
-- 设计少儿培训场景的 Multi-Agent CRM Copilot，将线索、课程、试听、转化和跟进拆解为可调用的自然语言工作流，并定义主控与专项 Agent 边界。
-- 规划 RAG、结构化业务 Tool、SQLite source of truth 与 HITL 的分工，避免 LLM 编造动态课程事实或越权执行 CRM 写操作。
+- 设计“Shared Business Layer + Two Agent Experiences”的少儿培训转化系统，以 Multi-Agent 服务员工复杂任务、Single Agent 服务家长窄任务。
+- 规划 Persona、RAG、结构化业务 Tool、SQLite source of truth 与 HITL 的分工，隔离家长端和员工端的数据及操作权限。
 - 以 Golden Case 与 Debug trace 定位路由、Tool 契约和过度执行问题，迭代停止条件及 CRM 写入 guardrail，并在 Coze Preview 人工验证核心路径；回归同时关注重复漏拦与新事实误拦。
 
 ## Interview 60-second pitch
 
-我做 CoachFlow 是想解决培训机构招生里“信息散、判断慢、录入不完整”的问题。场景表面像 CRM，实质是连续任务：识别家长、读取试听和互动、查询动态课程、判断下一步，再决定是否写回。我的关键判断是把 RAG、LLM、结构化 Tool 和人工确认分层：稳定知识交给 RAG，实时名额和 CRM 事实只能查 Tool，写操作由后端校验，高风险跟进必须 HITL。原型已用虚构数据、Golden Case、Debug trace 和人工 E2E 验证迭代流程与边界；下一步是 production deployment、自动化 trace evaluation、权限和真实机构试点，而不是先扩功能。
+CoachFlow 是面向少儿培训机构的 AI lead conversion system。家长需要回答“孩子适合什么课”，员工需要回答“今天跟谁、怎么推进”，所以我把产品拆成共享业务层上的两个体验：Concierge 用 Single Agent 完成咨询与课程匹配，Copilot 用 Multi-Agent 处理 CRM、试听、评分和跟进。稳定知识来自 RAG，实时名额和 CRM 事实来自 Tool，高风险跟进必须 HITL。当前 Staff 核心流程已用虚构数据人工验证；Customer 端已建立独立原型，生产身份、受控 Lead Capture 和线上评测是下一步。
 
 ## STAR / Deep Dive Talking Points
 

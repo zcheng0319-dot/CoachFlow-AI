@@ -1,162 +1,119 @@
 # CoachFlow AI
 
-**AI-native CRM & Operations Copilot for youth sports training businesses.**
+**AI-native lead conversion system for youth sports training businesses.**
 
-CoachFlow 以少儿乒乓球培训作为高保真 Demo 场景，验证员工能否通过自然语言，可靠完成招生 CRM 的查询、分析与受控写入，而不是在表格、聊天记录与后台之间切换。
+CoachFlow 用一套共享业务数据，提供两个独立的 AI 体验：员工通过 **CoachFlow Copilot** 管理线索和转化，家长通过 **CoachFlow Concierge** 咨询训练与课程。
 
-> **状态：本地原型。** 所有业务记录都是虚构的 synthetic demo data，不代表真实机构、客户、营收或转化效果。
+> **证据等级**：当前为本地原型，所有业务记录均为 synthetic demo data。Staff Copilot 的六条核心流程已在 Coze Preview / Debug 中人工验证；Customer Concierge 已在 Coze 创建独立 Single Agent 并接入知识库及两个课程查询 Tool。项目未 production 化、未接入真实客户或消息渠道，也没有自动化回归、线上指标或 SLA。
 
 ![CoachFlow AI 网页端界面概念展示：AI 对话、线索信息与跟进操作](docs/assets/coachflow-web-concept.png)
 
-*网页端界面概念展示：呈现 AI 对话、线索信息与跟进操作的产品布局。图中价格、评分、匹配率与优惠等内容仅为界面示例，不代表当前后端数据、已实现功能或真实客户效果；Coze 人工验证范围见下方 Verified Demo Flows。*
+*网页端界面概念展示。图中价格、评分、匹配率与优惠仅为视觉示例，不代表当前后端数据、已实现功能或真实客户效果。*
 
-## Why CoachFlow?
+## One Business, Two Agent Experiences
 
-少儿培训机构每天面对新家长咨询、水平不明确、班级名额变化、试听后犹豫、价格或时间冲突，以及散落在微信、电话和到店沟通中的反馈。难点不只是记录数据，而是将自然语言请求串成可追溯的业务动作：识别对象、读取事实、做受限分析，并在必要时由人确认后写入。
+| Experience | 用户 | 核心问题 | Agent 形态 |
+| --- | --- | --- | --- |
+| **CoachFlow Copilot** | 老板、店长、招生顾问、课程顾问 | 今天应该关注哪个客户，下一步做什么？ | Multi-Agent |
+| **CoachFlow Concierge** | 潜在家长、潜在学员 | 我的孩子适合学什么，下一步如何开始？ | Single Agent |
 
-CoachFlow 的 V1 假设是：**自然语言可以成为 CRM 的操作入口，但动态事实、写入校验与高风险动作不能交给模型猜测。**
+### CoachFlow Copilot — Internal Staff Copilot
 
-## 它做什么
+员工用自然语言完成 CRM 查询、Lead 分析与评分、课程推荐、客户互动写回、新 Lead 创建、转化阻塞判断和跟进任务。主控 Agent 按任务分配给招生线索、课程顾问或转化跟进 Agent；创建跟进任务必须经过人工确认。
 
-```mermaid
-flowchart LR
-    U[运营人员 / 顾问] --> R[Coze 主控 Agent]
-    R --> L[招生线索 Agent]
-    R --> C[课程顾问 Agent]
-    R --> G[转化跟进 Agent]
-    C --> K[业务知识源 / RAG]
-    L --> T[CoachFlow FastAPI Tools]
-    C --> T
-    G --> T
-    T --> D[(SQLite CRM)]
-    G --> H[人工确认]
-    H --> F[create_followup]
-    F --> D
-```
+### CoachFlow Concierge — Customer-facing AI Course Consultant
 
-当前仓库实现了 FastAPI + SQLite 的业务 Tool、确定性课程推荐与线索评分、课程动态信息查询，以及 CRM 的 Lead / Interaction 写入保护。`coze/multi_agent_spec.md` 记录主控与三个专项 Agent 的职责划分；六条核心流程已在 Coze Preview / Debug 中人工完成 E2E 验证，但尚未 production 化或自动化回归。
+家长可以咨询乒乓球训练、判断大致水平、了解当前课程或获得课程推荐。当前 Concierge 只连接 CoachFlow 知识库、`get_course_info` 和 `recommend_courses`，不接触客户名单、销售评分或内部跟进策略。
 
-### 核心能力
+## Shared Business Layer
 
-1. **CRM 查询与线索分析**：读取 Lead、试听、互动与跟进记录，并由确定性规则计算 Lead Score。
-2. **动态课程事实查询与推荐**：价格、时间、教练和名额来自 SQLite Tool；推荐由年龄、水平、时间、预算和容量规则生成。
-3. **受控 CRM 写回**：创建明确的新 Lead、记录业务互动；写入前校验身份、低信息内容、完全重复与 10 分钟内近重复。
-4. **Human-in-the-loop**：跟进任务属于写操作，当前设计要求人工确认；删除、付款、报名等高风险动作不在 V1 范围内。
-
-## Why Agent, not another CRM dashboard?
-
-“张女士试听满意但觉得贵，还值得跟吗？”不是单次问答：系统要定位客户、读取试听和互动事实、计算优先级、识别阻塞因素，必要时寻找替代班级，再给出下一步建议。这是多步骤任务完成，不是静态报表或 FAQ。
-
-Agent 负责理解请求、路由和组织步骤；确定性 Tool 负责读写事实与规则计算；人负责确认高风险动作。这是 CoachFlow 的产品边界。
-
-## Key Product Decisions
-
-### RAG 与动态业务事实分离
-
-Volcano Engine Knowledge Base / RAG 用于水平判断、训练原则、试听 FAQ 和稳定业务知识；当前价格、班级、名额、教练、客户互动与试听历史必须通过结构化 Tool 获取。动态事实不由 LLM 从记忆中补全。
-
-### LLM 不直接拥有业务真相
-
-LLM 用于理解、归纳和建议；FastAPI + SQLite 是查询、参数校验、写入和确定性业务逻辑的 source of truth。模型提出解释，软件验证事实，人确认高风险行动。
-
-### 写操作按风险分级
-
-`create_followup` 被设计为需确认的操作。`upsert_lead` 与 `record_interaction` 只保存调用方明确提供的事实，不推断意向、不自动改客户档案、不自动调整 Lead Score。
-
-### CRM 写回不是静态 Seed
-
-后端已提供 `upsert_lead` 与 `record_interaction`，并已在 Coze Preview / Debug 中人工验证新建客户、已有客户写回和新客户首次咨询写回。写入触发策略尚未 production 化，也没有自动化回归承诺。
-
-### 控制 CRM 数据污染
-
-互动写入会过滤低信息消息，并检查 10 分钟内的完全重复和近重复内容。`SequenceMatcher` 阈值为 0.90；已验证的样例覆盖轻微改写拦截及预算、时间、意愿变化放行。它是文本相似度保护，不能保证识别所有语义重复或事实变化。
-
-## 当前 Tool Surface
-
-| Tool | 用途 | 类型 |
-| --- | --- | --- |
-| `list_leads` | 获取线索列表 | 读取 |
-| `upsert_lead` | 创建明确的新线索，避免同名家长/孩子重复 | 写入 |
-| `get_lead_detail` | 查看 Lead、试听、互动、跟进历史 | 读取 |
-| `record_interaction` | 写入经质量校验的客户互动事实 | 写入 |
-| `recommend_courses` | 按约束推荐班级 | 读取 / 计算 |
-| `get_course_info` | 查询指定课程的价格、班次、教练与名额 | 读取 |
-| `score_lead` | 用确定性规则计算线索优先级 | 读取 / 计算 |
-| `create_followup` | 创建待办跟进任务 | 写入，需 HITL |
-
-## Verified Demo Flows
-
-| Flow | Verified path | Status |
-| --- | --- | --- |
-| Named course query | Course Agent → `get_course_info` | ✅ Coze Preview |
-| Lead analysis | CRM → `score_lead` → analysis | ✅ Coze Preview |
-| Existing lead writeback | identity → `record_interaction` | ✅ Coze Preview |
-| New lead creation | `upsert_lead` | ✅ Coze Preview |
-| New lead + first consultation | `upsert_lead` → `record_interaction` | ✅ Coze Preview |
-| HITL follow-up | confirm → `create_followup` | ✅ Coze Preview |
-
-以上为 synthetic demo data 下在 Coze Preview / Debug 完成人工 E2E 验证的流程，不代表 production SLA 或真实客户效果。
-
-## Evaluation 与质量门槛
-
-仓库包含两个 Golden Case 工作簿：12 条核心用例与 36 条补充用例，覆盖路由、Tool 调用、实体识别、RAG、澄清、线索分析和 HITL 安全。开发中已在 Coze Preview / Debug 人工观察核心 E2E Flow；当前不宣称正式 Coze evaluator 分数或自动化 trace evaluation。
-
-开发中发现仅看 final answer 的 LLM Judge 无法可靠判断 Tool 是否执行，因此人工 Debug 同时检查路由、参数、实体、grounding、HITL 和最终回答。
-
-## How I Iterated the Agent
+两个体验共享同一套业务事实，避免维护两套课程与客户数据。
 
 ```mermaid
 flowchart LR
-    A[Golden Case] --> B[Observe Failure]
-    B --> C[Inspect Execution Trace]
-    C --> D[Classify Failure Layer]
-    D --> E[Make Smallest Possible Change]
-    E --> F[Regression Test]
-    F --> G[Update Guardrail / Eval Case]
-    G --> A
+    A[家长 / 潜在客户] --> B[CoachFlow Concierge]
+    B --> C[训练知识咨询]
+    B --> D[课程匹配]
+    B --> E[课程实时信息]
+    C --> F[Shared Knowledge]
+    D --> G[Business Tools]
+    E --> G
+    G --> H[Lead / CRM Layer]
+    H --> I[CoachFlow Copilot]
+    I --> J[招生线索 Agent]
+    I --> K[课程顾问 Agent]
+    I --> L[转化跟进 Agent]
+    J --> M[Lead Prioritization]
+    K --> N[Course Support]
+    L --> O[Follow-up / Conversion]
 ```
 
-| 失败 | 判断层次 | 最小改动与验证 |
+Customer Concierge 当前只使用课程知识和两个只读课程 Tool；图中的 Lead / CRM 连接表示未来受控 Lead Capture 方向，并不表示家长端现在可以直接写入或读取 CRM。
+
+- **Knowledge Layer**：Volcano Engine Knowledge Base 用于水平判断、训练原则、FAQ 和稳定业务知识。
+- **Structured Business Tools**：FastAPI 提供当前课程、价格、名额、教练及 CRM 相关能力。
+- **CRM / Database**：SQLite 是原型阶段的 structured source of truth；生产方向为 PostgreSQL。
+
+## Persona-based Capability Boundary
+
+用户身份决定 Agent 可以看到什么、可以做什么。
+
+| Capability / Tool | Staff Copilot | Customer Concierge |
+| --- | ---: | ---: |
+| Knowledge / RAG | ✅ | ✅ |
+| `get_course_info` | ✅ | ✅ |
+| `recommend_courses` | ✅ | ✅ |
+| `list_leads` | ✅ | ❌ |
+| `get_lead_detail` | ✅ | ❌ |
+| `score_lead` | ✅ | ❌ |
+| `record_interaction` | ✅ | 暂不直接开放 |
+| `upsert_lead` | ✅ | Future controlled lead capture |
+| `create_followup` | ✅ + HITL | ❌ |
+
+Customer Concierge 不允许访问其他客户信息、Lead Score、CRM 内部销售标签、员工跟进策略或内部销售优先级。
+
+## Why Multi-Agent for Staff, Single Agent for Customers?
+
+架构跟随任务复杂度，而不是追求 Multi-Agent 形式。
+
+Staff Copilot 要跨 CRM、课程、试听、互动、评分、转化和跟进协作，任务复杂且权限不同，因此由主控 Agent 分发给三个专项 Agent。Customer Concierge 当前只有“咨询 → 水平判断 → 课程匹配 → 课程信息确认”的窄任务链，Single Agent 能减少路由错误、token 成本、延迟和上下文交接，并让行为更可预测。
+
+## Product Experience
+
+- **员工问**：“张女士试听满意但觉得贵，还值得跟吗？”Copilot 读取 CRM 事实和确定性评分，解释阻塞因素并给出下一步建议。
+- **员工说**：“张女士刚微信说预算最多 2000 元。”Copilot 识别客户、写入新事实并停止，不擅自推荐课程。
+- **家长问**：“9 岁零基础，周末有什么课？”Concierge 结合稳定训练知识与当前课程数据给出匹配结果。
+- **家长问**：“周末兴趣班还有几个名额？”Concierge 通过结构化 Tool 查询当前信息，不从知识库猜测。
+
+## Validation and Boundaries
+
+Staff Copilot 已用 synthetic demo data 人工验证：指定课程查询、客户分析、已有客户写回、新 Lead 创建、新 Lead 加首次咨询，以及 HITL 跟进的确认与取消分支。开发评审同时观察 Golden Case、执行 trace 和最终回答。
+
+Customer Concierge 当前为独立 Coze Single Agent 原型，已接入知识库与两个只读课程 Tool；仓库不主张其 production 效果、真实客户转化或自动化评测结果。Customer 侧 Lead Capture、真实消息接入、认证、RBAC、租户隔离和生产监控仍属于后续工作。
+
+## How the Product Was Iterated
+
+| 发现的问题 | 定位结果 | 最小改动 |
 | --- | --- | --- |
-| 新客户被交给转化 Agent | Intent routing | 调整主控优先级与节点适用场景；Preview 观察 Lead Agent → `upsert_lead` |
-| 写回后继续推荐课程 | Autonomy / stop condition | 明确只提供新事实时写回即停止；以是否出现额外 Tool Call 为回归门槛 |
-| 轻微改写重复入库 | Backend guardrail | 10 分钟窗口 + 0.90 文本相似度；同时检查重复拦截与新事实放行 |
-| `child_age` 传成“8岁” | Tool contract | Coze 参数说明明确整数 `8`；后端保持类型校验 |
-| “不用确认”与双重确认 | Workflow | 确认统一由跟进 workflow 执行；Preview 验证确认写入、取消不写入 |
+| 新客户被路由到转化 Agent | Intent routing 冲突 | 提高建档意图优先级 |
+| 客户事实写回后继续推荐 | 缺少停止条件 | 完成最小动作后停止 |
+| 轻微改写造成重复记录 | 字符串精确匹配不足 | 增加保守的近重复保护 |
+| “8岁”导致 Tool 调用失败 | 自然语言与参数类型不一致 | 明确整数参数契约 |
+| 用户要求“不用确认” | 安全约束放错层 | 由 workflow 强制确认 |
 
-这些迭代结合开发记录、Git 改动与本地规则核查，详见 [Agent Iteration Story](docs/agent-iteration-story.md)。Coze 调整属于人工 Preview / Debug 证据，本地 spec 仍是早期草稿；上图是方法示意，Coze 执行轨迹与 HITL 真实截图待补充。
+## V1 Scope
 
-- [产品案例研究](docs/product-case-study.md)
-- [架构与边界](docs/architecture.md)
-- [评测方法](docs/evaluation.md)
-- [Demo 场景](docs/demo-scenarios.md)
+V1 验证双端 AI 如何共享业务数据并保持不同权限。不包含真实微信、支付、自动报名退款、完整管理后台或 production 身份系统。
 
-## What I intentionally did NOT build
+## Read More
 
-V1 不构建完整 CRM 前端、支付、真实微信接入、自动报名/退款、生产级身份系统、Redis/Kafka/Kubernetes、机器学习评分或完整多租户权限体系。优先验证的是“自然语言能否可靠完成关键 CRM 读 / 写 / 分析 / 跟进闭环”。
+- [Product Case Study](docs/product-case-study.md)
+- [Two-experience Architecture and Permissions](docs/architecture.md)
+- [Evaluation Method](docs/evaluation.md)
+- [Agent Iteration Story](docs/agent-iteration-story.md)
+- [Demo Scenarios](docs/demo-scenarios.md)
 
-## Prototype → Production Evolution
-
-当前原型：Coze Preview / Debug 人工 E2E 验证 + Volcano Engine Knowledge Base / RAG + FastAPI + SQLite + synthetic demo data。生产化需要托管数据库、认证与 RBAC、租户隔离、真实消息集成、可观测性与 tracing、CRM/教务系统集成、持久部署，以及线上评测监控。
-
-## 技术栈
-
-- Python、FastAPI、SQLite
-- Coze Multi-Agent 与 Volcano Engine Knowledge Base / RAG
-- 本地中文业务知识源
-- OpenAPI Tool 契约、Mermaid 文档图
-
-## 目录
-
-```text
-backend/   FastAPI、SQLite 访问与确定性业务逻辑
-coze/      Multi-Agent 职责与 Prompt 规格
-data/      本地数据库运行状态与中文知识源
-docs/      产品案例、架构、评测与 Demo 说明
-evals/     Golden Case 工作簿
-```
-
-## Running locally
+## Run the Prototype
 
 ```powershell
 python -m pip install -r backend/requirements.txt
@@ -164,4 +121,4 @@ python -m pip install -r backend/requirements.txt
 .\.venv\Scripts\python.exe -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 ```
 
-运行 `seed.py` 会重建本地 synthetic demo 数据。启动后可访问 `http://127.0.0.1:8000/openapi.json` 查看 Tool 契约。
+运行 `seed.py` 会重建 synthetic demo 数据。启动后访问 `http://127.0.0.1:8000/openapi.json` 查看 Tool 契约。

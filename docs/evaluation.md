@@ -11,7 +11,16 @@
 
 这些用例用于检查路由、Tool 调用、实体识别、RAG、澄清、线索分析和 HITL 安全。它们是测试资产，不是 RAG 知识源。
 
-此外，六条核心路径已在 Coze Preview / Debug 中以 synthetic demo data 人工完成 E2E 验证。这不等于 production deployment，也不等于已具备自动化回归。
+此外，Staff Copilot 的六条核心路径已在 Coze Preview / Debug 中以 synthetic demo data 人工完成 E2E 验证。Customer Concierge 已建立独立 Single Agent 并接入知识库、`get_course_info` 和 `recommend_courses`；当前不将 Staff 的验证结果外推为 Customer 侧效果。这些证据不等于 production deployment，也不等于已具备自动化回归。
+
+## Two-experience evaluation boundary
+
+| Experience | 核心检查 |
+| --- | --- |
+| Staff Copilot | Multi-Agent 路由、CRM grounding、实体识别、写回质量、HITL 与不应发生的额外动作 |
+| Customer Concierge | Single Agent 回答边界、课程 Tool 调用、动态事实 grounding、澄清质量与 CRM 权限隔离 |
+
+两个 Experience 共享部分课程 Golden Case，但权限和任务完成标准必须分开。Customer Concierge 不应调用 CRM 客户查询、Lead Score、Interaction Writeback 或 Follow-up。
 
 ## 当前质量门槛
 

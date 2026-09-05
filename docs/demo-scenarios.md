@@ -1,6 +1,8 @@
 # Demo Scenarios
 
-## 1. 新客户进入 CRM
+## Staff Copilot
+
+### 1. 新客户进入 CRM
 
 **输入**：运营人员提供家长、孩子、年龄、水平和可上课时间，并要求录入 CRM。
 
@@ -10,7 +12,7 @@
 
 已在 Coze Preview / Debug 以 synthetic demo data 人工验证新 Lead 建档，并验证新 Lead 后可继续写入首次咨询记录。
 
-## 2. 查询动态课程名额
+### 2. 查询动态课程名额
 
 **输入**：“周末兴趣班还有几个名额？”
 
@@ -20,7 +22,7 @@
 
 已在 Coze Preview / Debug 以 synthetic demo data 人工完成此路径验证。
 
-## 3. 试听满意但价格阻塞
+### 3. 试听满意但价格阻塞
 
 **输入**：“张女士试听后为什么还没报名？”
 
@@ -30,7 +32,7 @@
 
 已在 Coze Preview / Debug 以 synthetic demo data 人工完成此路径验证。
 
-## 4. 最新反馈写回
+### 4. 最新反馈写回
 
 **输入**：顾问提供客户刚刚表达的预算、时间或课程偏好。
 
@@ -40,7 +42,7 @@
 
 已在 Coze Preview / Debug 以 synthetic demo data 人工完成已有客户写回，并通过再次读取确认 interaction 已入库。
 
-## 5. 创建跟进任务
+### 5. 创建跟进任务
 
 **输入**：“为张女士创建周五跟进任务。”
 
@@ -50,4 +52,22 @@
 
 已在 Coze Preview / Debug 人工验证确认写入与取消不写入两条分支。
 
-所有场景使用 synthetic demo data；以上是 Coze Preview / Debug 人工 E2E 验证，不代表真实客户效果、production SLA、自动化 regression 或真实消息渠道集成。
+以上 Staff 场景使用 synthetic demo data，并已在 Coze Preview / Debug 人工 E2E 验证；不代表真实客户效果、production SLA、自动化 regression 或真实消息渠道集成。
+
+## Customer Concierge
+
+### 1. 家长咨询适合的课程
+
+**输入**：“孩子 9 岁，零基础，周末有空，适合什么课？”
+
+**流程**：Concierge 使用知识库辅助水平判断，再调用 `recommend_courses` 获取符合年龄、水平、时间与当前容量的课程。
+
+**边界**：只处理家长咨询和课程匹配，不查询任何 CRM 客户、销售标签或 Lead Score。
+
+### 2. 家长查询指定课程
+
+**输入**：“周末兴趣班还有几个名额？”
+
+**流程**：Concierge 调用 `get_course_info` 获取当前价格、时间、教练、剩余名额与可报名状态。
+
+**边界**：动态信息来自结构化 Tool，知识库只负责稳定训练知识和 FAQ。当前 Concierge 为独立 Coze Single Agent 原型；此处描述当前能力与预期路径，不声明 production 效果或自动化 E2E 通过率。

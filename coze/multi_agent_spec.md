@@ -1,88 +1,95 @@
-# CoachFlow Multi-Agent Spec
+# CoachFlow Agent Experience Spec
 
-## Architecture
+CoachFlow 采用 **Shared Business Layer + Two Agent Experiences**。本文件记录产品职责与权限边界，不是 Coze 线上配置导出。
+
+## Experience A — CoachFlow Copilot
+
+**Internal Staff Copilot**
+
+服务机构老板、店长、招生顾问和课程顾问。核心问题是：“今天我应该关注哪个客户，以及下一步应该做什么？”
 
 ```text
 Coze Start
   ↓
 CoachFlow 主控 Agent
-  |- 招生线索 Agent (Lead Agent)
-  |- 课程顾问 Agent (Course Agent)
-  `- 转化跟进 Agent (Growth Agent)
+  ├─ 招生线索 Agent
+  ├─ 课程顾问 Agent
+  └─ 转化跟进 Agent
         ↓
-FastAPI Tools -> logic.py -> SQLite
+Shared Business Tools → SQLite CRM
 ```
 
-Coze Start 将请求交给 CoachFlow 主控 Agent；主控 Agent 负责分发三类业务任务，本身不持有业务 Tool。
-
-## Agent Responsibilities
+### Agent Responsibilities
 
 | Agent | 核心问题 | 职责 |
 | --- | --- | --- |
-| CoachFlow 主控 Agent | 应交给哪个业务 Agent？ | 理解请求方向并分发，不直接处理业务事实。 |
-| 招生线索 Agent (Lead Agent) | 这个人值不值得关注？ | 查看线索、互动与试听事实，计算线索优先级。 |
-| 课程顾问 Agent (Course Agent) | 这个孩子适合什么课程？ | 根据年龄、水平、时间和预算匹配课程、班级与教练。 |
-| 转化跟进 Agent (Growth Agent) | 这个人下一步应该怎么转化？ | 分析试听后的阻塞原因，提出跟进建议或寻找替代班级。 |
+| CoachFlow 主控 Agent | 应交给哪个业务 Agent？ | 理解员工意图并分发，不直接处理业务事实 |
+| 招生线索 Agent | 哪个客户值得关注？ | CRM 查询、新 Lead 创建、互动与试听读取、Lead 优先级 |
+| 课程顾问 Agent | 哪个课程合适？ | 课程推荐、指定课程动态信息与教练支持 |
+| 转化跟进 Agent | 为什么没报名，下一步怎么推进？ | 阻塞分析、Interaction Writeback、建议与 HITL Follow-up |
 
-## Tool Assignment
+新客户、新家长、新线索、录入 CRM 或建档意图优先路由到招生线索 Agent，即使同一句包含年龄、预算、时间或课程需求。转化跟进 Agent 排除新客户创建场景。
 
-| Agent | Tools |
+只提供客户最新事实时，写入 `record_interaction` 后停止。只有用户进一步要求评分、推荐或跟进时，才调用相应能力。
+
+## Experience B — CoachFlow Concierge
+
+**Customer-facing AI Course Consultant**
+
+服务潜在家长和潜在学员；已有学员家长属于未来扩展。核心问题是：“我的孩子适合学什么，以及下一步应该怎么开始？”
+
+Concierge 使用独立 **Single Agent**，当前连接：
+
+- CoachFlow 乒乓球知识库；
+- `get_course_info`；
+- `recommend_courses`。
+
+它可以回答一般训练问题、辅助大致水平判断、解释课程选择、查询当前课程信息并推荐课程。它不访问其他客户信息、内部销售标签、Lead Score、员工跟进策略或内部销售优先级。
+
+Customer task space 当前为“咨询 → 水平判断 → 课程匹配 → 课程信息确认”。采用 Single Agent 可减少路由错误、token 成本、延迟和 context handoff。**Architecture follows task complexity, not hype.**
+
+## Shared Business Layer
+
+| Layer | Responsibility |
 | --- | --- |
-| CoachFlow 主控 Agent | 无业务 Tool |
-| 招生线索 Agent (Lead Agent) | `list_leads`, `get_lead_detail`, `score_lead` |
-| 课程顾问 Agent (Course Agent) | `get_lead_detail`, `recommend_courses` |
-| 转化跟进 Agent (Growth Agent) | `get_lead_detail`, `score_lead`, `recommend_courses` |
+| Volcano Engine Knowledge Base | 水平判断、训练原则、FAQ 与稳定业务知识 |
+| FastAPI Structured Tools | 当前课程、价格、名额、教练、CRM、Lead、Interaction、Lead Score 与 Follow-up |
+| SQLite prototype | 当前 structured source of truth；production 方向为 PostgreSQL |
 
-同一 Tool 可以被多个业务 Agent 复用；每个 Agent 只使用完成自身职责所需的 Tool。
+动态价格、名额、时间、教练与 CRM 事实必须来自 Tool，不由知识库或 Agent 记忆补全。
+
+## Capability Assignment
+
+| Capability / Tool | Staff Copilot | Customer Concierge |
+| --- | ---: | ---: |
+| Knowledge / RAG | ✅ | ✅ |
+| `get_course_info` | ✅ | ✅ |
+| `recommend_courses` | ✅ | ✅ |
+| `list_leads` | ✅ | ❌ |
+| `get_lead_detail` | ✅ | ❌ |
+| `score_lead` | ✅ | ❌ |
+| `record_interaction` | ✅ | 暂不直接开放 |
+| `upsert_lead` | ✅ | Future controlled lead capture |
+| `create_followup` | ✅ + HITL | ❌ |
 
 ## Action Risk
 
-L0：读取与分析，可自动执行。L1：生成跟进建议或文案草稿，不修改系统。L2：创建跟进任务，必须人工确认。L3：发送消息、报名、支付、退款和删除，V1 禁止。
+L0：Persona 权限内的知识与数据读取，可自动执行。
 
-`create_followup` 不直接挂给任何 Agent；只有 Coze 的“创建跟进任务（需确认）”Workflow 可以调用它。
+L1：解释、课程建议或跟进文案草稿，不修改系统。
 
-## Applicable Scenarios
+L2：CRM 事实写入与 Follow-up，仅 Staff Copilot 可用；`create_followup` 由 Coze 跟进 workflow 确认后调用。
 
-**招生线索 Agent**：今天有哪些家长值得关注？帮我看看张女士的情况。哪些试听用户意向比较高？这个家长的成交可能性怎么样？
+L3：发送消息、报名、支付、退款和删除，V1 禁止。
 
-**课程顾问 Agent**：9 岁零基础周末有什么课程？预算 3000 元有什么班？给这个孩子推荐合适的班。哪位教练更适合初学者？
-
-**转化跟进 Agent**：这个家长试听完为什么还没报名？接下来应该怎么跟进张女士？哪些试听用户需要优先联系？陈女士时间冲突，有没有替代班？
-
-## Prompt Drafts
-
-### CoachFlow 主控 Agent
-
-你是 CoachFlow 主控 Agent。根据请求将任务分发给招生线索、课程顾问或转化跟进 Agent；不直接调用业务 Tool，不编造业务事实。
-
-### 招生线索 Agent
-
-你是 CoachFlow 的招生线索分析助手，帮助体育培训机构经营者识别值得优先跟进的招生线索。优先读取 CRM 事实；判断家长时先读取线索详情和互动历史。`course_fit` 和 `purchase_intent` 是基于历史咨询提取的信号，最终 Lead Score 必须调用 `score_lead`，不自行编造分数。数据不足时说明信息不足，并使用简洁中文回复。
-
-### 课程顾问 Agent
-
-你是 CoachFlow 的少儿乒乓球课程顾问。将家长需求转换为 `age`、`level`、`preferred_days` 和 `max_price`，并调用 `recommend_courses`。结果必须来自 Tool；不编造课程、价格、教练或名额。用户提供 `lead_id` 时可先读取详情；缺少必要信息时优先追问。多个候选时用中文说明差异，但不改变后端排序。
-
-### 转化跟进 Agent
-
-你是 CoachFlow 的试听转化与跟进助手。必须基于 CRM 事实和互动历史判断阻塞原因。判断优先级时调用 `score_lead`；时间冲突时调用 `recommend_courses` 寻找替代班级。当前只能生成建议或跟进文案，不得声称已发送消息、修改 CRM 或完成报名。使用自然、简洁的中文。
+用户要求“不用确认”不能跳过 Follow-up workflow 的确认分支。Cancel 不写入。当前后端没有确认凭证校验，该保证只适用于已配置并人工验证的 Coze workflow 路径。
 
 ## Knowledge / RAG
 
-课程顾问 Agent 使用 CoachFlow 业务知识库，用于水平判断、试听 FAQ 和课程选择通用知识。转化跟进 Agent 可使用同一知识库理解一般课程与试听规则。招生线索 Agent 当前不依赖 RAG，优先使用 CRM 事实和确定性评分；主控 Agent 不直接检索知识库。
+两个体验可以使用同一 CoachFlow 业务知识库。Concierge 用于家长训练咨询和水平判断；Staff Copilot 中的课程、转化任务可用它理解一般规则。CRM 事实与实时课程数据始终由结构化 Tool 提供。
 
-## Golden Collaboration Cases
+## Evidence Boundary
 
-**线索分析**
+Staff Copilot 的指定课程查询、CRM 客户分析、已有客户写回、新客户建档、新客户首次咨询写回，以及 HITL 确认 / 取消分支，已在 Coze Preview / Debug 使用 synthetic demo data 人工验证。
 
-```text
-用户：张女士这个家长现在怎么样？
-Start -> CoachFlow 主控 Agent -> 招生线索 Agent -> get_lead_detail -> 提取意向信号 -> score_lead -> 中文总结
-```
-
-**时间冲突转化**
-
-```text
-用户：陈女士试听很满意，但是时间不合适，应该怎么办？
-Start -> CoachFlow 主控 Agent -> 转化跟进 Agent -> get_lead_detail -> 发现时间冲突 -> recommend_courses -> 找到替代班 -> 给店长跟进建议
-```
+Customer Concierge 已在 Coze 创建为独立 Single Agent，并接入知识库、`get_course_info` 和 `recommend_courses`。本文不主张 production 上线、真实客户效果、自动化回归或线上 SLA。

@@ -121,6 +121,6 @@
 
 ## 可视化证据与下一步
 
-README 中的 Mermaid 图呈现迭代方法，不充当 Coze 截图。截至本次核查，尚无真实图片。后续可放入 `docs/assets/`：Multi-Agent 全图、`upsert_lead` → `record_interaction` trace，以及 HITL 确认画面，并附上对应输入与结果。
+README 中的产品界面图是概念展示，不充当 Coze 执行证据。截至本次核查，尚无真实 Coze graph / trace / HITL 截图。后续可放入 `docs/assets/`：Multi-Agent 全图、`upsert_lead` → `record_interaction` trace，以及 HITL 确认画面，并附上对应输入与结果。
 
 后续将回归输入、预期路径、禁止动作、实际 trace 和结果成对保存，才能比较每次改动。本文提供定性迭代证据，不主张真实客户转化、营收、生产准确率、延迟 SLA 或全自动回归结果。
