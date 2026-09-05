@@ -81,9 +81,11 @@ V1 聚焦高频链路中的读、写、分析和跟进边界。完整后台、�
 
 ## Resume-ready bullets
 
+完整的 Bad Case → Trace → Root Cause → 最小修改 → 回归过程见 [Agent Iteration Story](agent-iteration-story.md)，涵盖路由、过度执行、近重复、参数类型、HITL、评测与动态信息查询。每项分别标注源码证据、人工 Coze 记录与尚待补充的 trace。
+
 - 设计少儿培训场景的 Multi-Agent CRM Copilot，将线索、课程、试听、转化和跟进拆解为可调用的自然语言工作流，并定义主控与专项 Agent 边界。
 - 规划 RAG、结构化业务 Tool、SQLite source of truth 与 HITL 的分工，避免 LLM 编造动态课程事实或越权执行 CRM 写操作。
-- 构建 Golden Case 驱动的评测思路与 CRM 写入 guardrail，包括低信息过滤、10 分钟完全去重和 0.90 近重复保护。
+- 以 Golden Case 与 Debug trace 定位路由、Tool 契约和过度执行问题，迭代停止条件及 CRM 写入 guardrail，并在 Coze Preview 人工验证核心路径；回归同时关注重复漏拦与新事实误拦。
 
 ## Interview 60-second pitch
 

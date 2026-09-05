@@ -43,7 +43,7 @@ flowchart TB
 | 课程顾问 Agent | 孩子适合什么课？ | 收集约束、调用课程推荐、使用通用知识 |
 | 转化跟进 Agent | 为什么尚未报名，下一步怎么推进？ | 分析事实、评分、必要时找替代班级 |
 
-本地 Coze 文件记录职责与 Prompt 规格；六条核心流程已在 Coze Preview / Debug 中以 synthetic demo data 人工完成 E2E 验证。它不是 production deployment：自动化回归、线上监控、认证与真实消息集成仍未完成。
+本地 Coze 文件仍是早期职责与 Prompt 草稿，未同步后续写回与路由调整。依据开发记录，六条核心流程已在 Coze Preview / Debug 中以 synthetic demo data 人工完成 E2E 验证；具体证据来源与差异见 [Agent Iteration Story](agent-iteration-story.md)。自动化回归、生产部署、线上监控、认证与真实消息集成仍未完成。
 
 ## Verified E2E paths
 
@@ -64,6 +64,8 @@ flowchart TB
 | L1 | 解释、建议、跟进文案草稿 | 可自动生成，不写系统 |
 | L2 | 创建 follow-up、写 CRM 事实 | 后端验证；follow-up 设计为需确认 |
 | L3 | 报名、支付、退款、删除 | V1 不开放 |
+
+HITL 的确认 / 取消由 Coze 跟进 workflow 控制，Agent 准备参数后交给 workflow。当前 `create_followup` 后端没有确认凭证校验；已验证的“不用确认”防绕过行为仅限该 workflow 路径，不代表直接访问 API 也受到同等保护。
 
 ## Dynamic CRM writeback
 

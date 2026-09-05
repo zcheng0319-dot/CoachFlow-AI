@@ -65,7 +65,7 @@ LLM 用于理解、归纳和建议；FastAPI + SQLite 是查询、参数校验�
 
 ### 控制 CRM 数据污染
 
-互动写入会过滤低信息消息，并检查 10 分钟内的完全重复和近重复内容。近重复使用 Python 标准库 `SequenceMatcher`，阈值为 0.90：拦截轻微改写，同时放行预算、时间或意愿发生变化的新事实。
+互动写入会过滤低信息消息，并检查 10 分钟内的完全重复和近重复内容。`SequenceMatcher` 阈值为 0.90；已验证的样例覆盖轻微改写拦截及预算、时间、意愿变化放行。它是文本相似度保护，不能保证识别所有语义重复或事实变化。
 
 ## 当前 Tool Surface
 
@@ -97,7 +97,30 @@ LLM 用于理解、归纳和建议；FastAPI + SQLite 是查询、参数校验�
 
 仓库包含两个 Golden Case 工作簿：12 条核心用例与 36 条补充用例，覆盖路由、Tool 调用、实体识别、RAG、澄清、线索分析和 HITL 安全。开发中已在 Coze Preview / Debug 人工观察核心 E2E Flow；当前不宣称正式 Coze evaluator 分数或自动化 trace evaluation。
 
-当前质量门槛关注路由正确性、Tool 调用正确性、CRM grounding、动态事实幻觉、HITL 合规、重复写入率与任务完成延迟。开发阶段应结合 Golden Case、可见执行轨迹和最终回答共同判断。
+开发中发现仅看 final answer 的 LLM Judge 无法可靠判断 Tool 是否执行，因此人工 Debug 同时检查路由、参数、实体、grounding、HITL 和最终回答。
+
+## How I Iterated the Agent
+
+```mermaid
+flowchart LR
+    A[Golden Case] --> B[Observe Failure]
+    B --> C[Inspect Execution Trace]
+    C --> D[Classify Failure Layer]
+    D --> E[Make Smallest Possible Change]
+    E --> F[Regression Test]
+    F --> G[Update Guardrail / Eval Case]
+    G --> A
+```
+
+| 失败 | 判断层次 | 最小改动与验证 |
+| --- | --- | --- |
+| 新客户被交给转化 Agent | Intent routing | 调整主控优先级与节点适用场景；Preview 观察 Lead Agent → `upsert_lead` |
+| 写回后继续推荐课程 | Autonomy / stop condition | 明确只提供新事实时写回即停止；以是否出现额外 Tool Call 为回归门槛 |
+| 轻微改写重复入库 | Backend guardrail | 10 分钟窗口 + 0.90 文本相似度；同时检查重复拦截与新事实放行 |
+| `child_age` 传成“8岁” | Tool contract | Coze 参数说明明确整数 `8`；后端保持类型校验 |
+| “不用确认”与双重确认 | Workflow | 确认统一由跟进 workflow 执行；Preview 验证确认写入、取消不写入 |
+
+这些迭代结合开发记录、Git 改动与本地规则核查，详见 [Agent Iteration Story](docs/agent-iteration-story.md)。Coze 调整属于人工 Preview / Debug 证据，本地 spec 仍是早期草稿；上图是方法示意，真实截图待补充。
 
 - [产品案例研究](docs/product-case-study.md)
 - [架构与边界](docs/architecture.md)

@@ -27,13 +27,15 @@
 
 ## Evaluation lesson
 
-开发中已经发现：只让 LLM Judge 观察最终回答，无法可靠判断 Tool 是否真的被调用。例如，一个回答可能看似给出了正确名额，却没有调用 `get_course_info`。人工 Debug 阶段因此同时观察 Routing、Tool Calling、Entity Resolution、Grounding、HITL 与 Final Answer：
+开发中已经发现：只让 LLM Judge 观察最终回答，无法可靠判断 Tool 是否真的被调用；看不到 trace 也可能误判正确调用。人工 Debug 阶段因此同时观察 Routing、Tool Calling、Entity Resolution、Grounding、HITL、Prompt Logic 与 Final Answer：
 
 ```text
 Golden Case + visible execution trace + final answer
 ```
 
 当前尚无正式 Coze evaluator、自动 trace evaluation、线上成功率或生产监控分数。若要形成可比较的量化结果，需要先在可观察的执行环境中固定输入、保存 Tool trace，并定义每类用例的通过条件。
+
+具体失败、责任层与最小修改见 [Agent Iteration Story](agent-iteration-story.md)。回归同时检查应发生与不应发生的动作：仅提供新事实时，写回后不应继续推荐或评分；取消跟进时，不应出现创建任务的调用。
 
 ## CRM writeback checks
 
@@ -44,6 +46,8 @@ Golden Case + visible execution trace + final answer
 - 同 Lead、同渠道、10 分钟窗口内的完全重复拦截；
 - 0.90 `SequenceMatcher` 近重复拦截；
 - 预算、时间、意愿改变等新业务事实仍可写入。
+
+上述结论针对已验证样例。2026-09-05 的只读复核确认：加“家长”的原始近重复样例相似度为 0.9474；更大改写“咨询周末有没有适合的课程…”与“家长咨询周末合适的课程…”仅为 0.8293，不会命中 0.90 阈值。高相似文本也可能包含真实事实变化，因此不能把规则当作语义去重保证。具体输入及核查范围见迭代记录；本轮没有重跑写接口或自动化 Coze regression。
 
 ## Future evaluation work
 
