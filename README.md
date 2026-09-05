@@ -165,11 +165,3 @@ python -m pip install -r backend/requirements.txt
 ```
 
 运行 `seed.py` 会重建本地 synthetic demo 数据。启动后可访问 `http://127.0.0.1:8000/openapi.json` 查看 Tool 契约。
-
-## What this project demonstrates as an AI PM
-
-- 将模糊的 Agent 想法收敛为 Lead → Course → Trial → Conversion → Follow-up 的业务工作流。
-- 为 LLM、RAG、确定性 Tool 与人工确认划分职责边界，并在 Coze Debug 中人工验证关键路径。
-- 用 Golden Case、Debug trace 和最终回答共同定义质量门槛；发现路由、Tool 或写入质量缺口后迭代边界与 guardrail。
-- 用动态数据 grounding、Tool 参数契约与受控写入降低幻觉和脏数据风险。
-- 显式记录 V1 取舍，优先验证高价值闭环而不是堆叠基础设施。
