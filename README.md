@@ -6,6 +6,10 @@ CoachFlow 以少儿乒乓球培训作为高保真 Demo 场景，验证员工能�
 
 > **状态：本地原型。** 所有业务记录都是虚构的 synthetic demo data，不代表真实机构、客户、营收或转化效果。
 
+![CoachFlow AI 网页端界面概念展示：AI 对话、线索信息与跟进操作](docs/assets/coachflow-web-concept.png)
+
+*网页端界面概念展示：呈现 AI 对话、线索信息与跟进操作的产品布局。图中价格、评分、匹配率与优惠等内容仅为界面示例，不代表当前后端数据、已实现功能或真实客户效果；Coze 人工验证范围见下方 Verified Demo Flows。*
+
 ## Why CoachFlow?
 
 少儿培训机构每天面对新家长咨询、水平不明确、班级名额变化、试听后犹豫、价格或时间冲突，以及散落在微信、电话和到店沟通中的反馈。难点不只是记录数据，而是将自然语言请求串成可追溯的业务动作：识别对象、读取事实、做受限分析，并在必要时由人确认后写入。
@@ -120,7 +124,7 @@ flowchart LR
 | `child_age` 传成“8岁” | Tool contract | Coze 参数说明明确整数 `8`；后端保持类型校验 |
 | “不用确认”与双重确认 | Workflow | 确认统一由跟进 workflow 执行；Preview 验证确认写入、取消不写入 |
 
-这些迭代结合开发记录、Git 改动与本地规则核查，详见 [Agent Iteration Story](docs/agent-iteration-story.md)。Coze 调整属于人工 Preview / Debug 证据，本地 spec 仍是早期草稿；上图是方法示意，真实截图待补充。
+这些迭代结合开发记录、Git 改动与本地规则核查，详见 [Agent Iteration Story](docs/agent-iteration-story.md)。Coze 调整属于人工 Preview / Debug 证据，本地 spec 仍是早期草稿；上图是方法示意，Coze 执行轨迹与 HITL 真实截图待补充。
 
 - [产品案例研究](docs/product-case-study.md)
 - [架构与边界](docs/architecture.md)
