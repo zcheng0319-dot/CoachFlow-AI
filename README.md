@@ -6,9 +6,16 @@ CoachFlow 用一套共享业务数据，提供两个独立的 AI 体验：员工
 
 > **证据等级**：当前为本地原型，所有业务记录均为 synthetic demo data。Staff Copilot 的六条核心流程已在 Coze Preview / Debug 中人工验证；Customer Concierge 已在 Coze 创建独立 Single Agent 并接入知识库及两个课程查询 Tool。项目未 production 化、未接入真实客户或消息渠道，也没有自动化回归、线上指标或 SLA。
 
-![CoachFlow AI 网页端界面概念展示：AI 对话、线索信息与跟进操作](docs/assets/coachflow-web-concept.png)
-
-*网页端界面概念展示。图中价格、评分、匹配率与优惠仅为视觉示例，不代表当前后端数据、已实现功能或真实客户效果。*
+<table>
+  <tr>
+    <td width="50%"><img src="docs/assets/coachflow-web-concept.png" alt="CoachFlow Copilot 网页端概念展示" /></td>
+    <td width="50%"><img src="docs/assets/c端助手页面09_15_03.png" alt="CoachFlow Concierge 客户端 AI 课程顾问演示页面" /></td>
+  </tr>
+  <tr>
+    <td><sub>Staff Copilot 概念界面；数据与指标仅为视觉示例。</sub></td>
+    <td><sub>Customer Concierge 产品 Demo；课程与对话均为 synthetic demo data。</sub></td>
+  </tr>
+</table>
 
 ## One Business, Two Agent Experiences
 
@@ -24,10 +31,6 @@ CoachFlow 用一套共享业务数据，提供两个独立的 AI 体验：员工
 ### CoachFlow Concierge — Customer-facing AI Course Consultant
 
 家长可以咨询乒乓球训练、判断大致水平、了解当前课程或获得课程推荐。当前 Concierge 只连接 CoachFlow 知识库、`get_course_info` 和 `recommend_courses`，不接触客户名单、销售评分或内部跟进策略。
-
-![CoachFlow Concierge 客户端 AI 课程顾问演示页面](docs/assets/c端助手页面09_15_03.png)
-
-*CoachFlow Concierge 客户端产品界面 Demo。图中课程与对话内容均为 synthetic demo data，仅用于展示面向家长的咨询、课程匹配与课程信息查询体验。*
 
 ## Shared Business Layer
 
